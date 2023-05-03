@@ -12,14 +12,16 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  phone     String?  @unique
-  email     String?  @unique
+  id        Int       @id @default(autoincrement())
+  phone     String?   @unique
+  email     String?   @unique
   name      String
   avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt // 업데이트 될 때마다 알려줌.
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt // 업데이트 될 때마다 알려줌.
   Tokens    Token[]
+  products  Product[]
+  fav       Fav[]
 }
 
 model Token {
@@ -27,6 +29,34 @@ model Token {
   payload   String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade) // 관계성 있는 것 함꼐 삭제
   userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 이 Product 모델의 userId에 들어가는 값은 User의 id값이라는 의미
+  userId      Int
+  image       String
+  name        String
+  price       Int
+  description String   @db.MediumText
+  favs        Fav[]
+
+  @@index([userId])
+}
+
+model Fav {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

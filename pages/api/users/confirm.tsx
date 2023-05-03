@@ -23,7 +23,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
   res.json({ ok: true });
 }
 export default withApiSession(withHandler({
-  method: "POST",
+  methods: ["POST"],
   handler, 
   isPrivate: false,
 }));
