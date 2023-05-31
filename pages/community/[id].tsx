@@ -51,7 +51,7 @@ const CommunityPostDetail: NextPage = () => {
     useMutation<AnswerResponse>(`/api/posts/${router.query.id}/answers`);
   const onWonderClick = () => {
     if (!data) return;
-    mutate(
+    mutate( // useSWR의 mutate를 사용할 때는 첫번째 인자로 key를 주지 않아도 된다. 하지만 useSWRConfig의 mutate를 사용할 때는 key를 줘야 한다.
       {
         ...data,
         post: {
@@ -64,8 +64,8 @@ const CommunityPostDetail: NextPage = () => {
           },
         },
         isWondering: !data.isWondering,
-      },
-      false
+      }, // 바꿀 데이터 값
+      false // default는 true, false값을 주면 mutate 이후에 revalidate 하지 않는다.
     );
     if (!loading) {
       wonder({});
@@ -77,8 +77,8 @@ const CommunityPostDetail: NextPage = () => {
   };
   useEffect(() => {
     if (answerData && answerData.ok) {
-      reset();
-      mutate();
+      reset(); // input에 적혀있는 값들 초기화
+      mutate(); // 인자가 없을 경우 해당 useSWR을 재검증하기만 한다.
     }
   }, [answerData, reset, mutate]);
 
