@@ -7,64 +7,83 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
-  const {
-    query: { id },
-    session: { user },
-  } = req;
-  const post = await client.post.findUnique({
-    where: {
-      id: +(id as string | string[]).toString(),
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          avatar: true,
-        },
+  console.log(req.method)
+  if (req.method === "GET") { // 커뮤니티 글 상세사항을 불러오고 싶을 경우
+    const {
+      query: { id },
+      session: { user },
+    } = req;
+    const post = await client.post.findUnique({
+      where: {
+        id: +(id as string | string[]).toString(),
       },
-      answers: {
-        select: {
-          answer: true,
-          id: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        answers: {
+          select: {
+            answer: true,
+            id: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
             },
           },
         },
-      },
-      _count: {
-        select: {
-          answers: true,
-          wondering: true,
+        _count: {
+          select: {
+            answers: true,
+            wondering: true,
+          },
         },
       },
-    },
-  });
-  const isWondering = Boolean(
-    await client.wondering.findFirst({
+    });
+    const isWondering = Boolean(
+      await client.wondering.findFirst({
+        where: {
+          postId: +(id as string | string[]).toString(),
+          userId: user?.id,
+        },
+        select: {
+          id: true,
+        },
+      })
+    );
+
+    res.json({
+      ok: true,
+      post,
+      isWondering,
+    });
+  }
+
+  if (req.method === "DELETE") { // 커뮤니티 글 상세사항을 삭제하고 싶을 경우
+    const {
+      query: { id },
+    } = req;
+
+    const post = await client.post.delete({
       where: {
-        postId: +(id as string | string[]).toString(),
-        userId: user?.id,
-      },
-      select: {
-        id: true,
+        id: +(id as string | string[]).toString(),
       },
     })
-  );
 
-  res.json({
-    ok: true,
-    post,
-    isWondering,
-  });
+    res.json({
+      ok: true,
+    });
+  }
 }
 export default withApiSession(
   withHandler({
-    methods: ["GET"],
+    methods: ["GET", "DELETE"],
     handler,
   })
 );

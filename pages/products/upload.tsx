@@ -24,7 +24,7 @@ interface UploadProductMutation {
 const Upload: NextPage = () => {
   const router = useRouter();
   const { register, handleSubmit } = useForm<UploadProductForm>();
-  const [uploadProduct, { loading, data }] = useMutation<UploadProductMutation>("/api/products");
+  const [uploadProduct, { loading, data }] = useMutation<UploadProductMutation>("/api/products", 'POST');
   const onValid = (data: UploadProductForm) => { // form 내의 값이 유효한 경우 이 함수를 실행
     if (loading) return; // 로딩 중일 경우 실행X
     uploadProduct(data);

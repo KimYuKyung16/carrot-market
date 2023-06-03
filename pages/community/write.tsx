@@ -19,10 +19,10 @@ interface WriteResponse {
 }
 
 const Write: NextPage = () => {
-  const { latitude, longitude } = useCoords();
+  const { latitude, longitude } = useCoords(); // 위도, 경도
   const router = useRouter();
   const { register, handleSubmit } = useForm<WriteForm>();
-  const [post, { loading, data }] = useMutation<WriteResponse>("/api/posts");
+  const [post, { loading, data }] = useMutation<WriteResponse>("/api/posts", 'POST');
   const onValid = (data: WriteForm) => {
     if (loading) return; // 제출 중에 버튼을 또 누르는 것을 방지
     post({ ...data, latitude, longitude });

@@ -24,7 +24,7 @@ const ItemDetail: NextPage = () => {
   const { data, mutate } = useSWR<ItemDetailResponse>(
     router.query.id ? `/api/products/${router.query.id}` : null
   );
-  const [toggleFav] = useMutation(`/api/products/${router.query.id}/fav`);
+  const [toggleFav] = useMutation(`/api/products/${router.query.id}/fav`, 'POST');
   const onFavoriteClick = () => {
     toggleFav({});
     if (!data) return;

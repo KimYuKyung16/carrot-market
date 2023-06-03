@@ -22,7 +22,7 @@ interface CreateResponse {
 
 const Create: NextPage = () => {
   const router = useRouter();
-  const [createStream, { loading, data }] = useMutation<CreateResponse>(`/api/streams`);
+  const [createStream, { loading, data }] = useMutation<CreateResponse>(`/api/streams`, 'POST');
   const { register, handleSubmit } = useForm<CreateForm>();
 
   const onValid = (form: CreateForm) => {

@@ -9,6 +9,7 @@ import useMutation from "@libs/client/useMutation";
 import { cls } from "@libs/client/utils";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
+import useUser from "@libs/client/useUser";
 
 interface AnswerWithUser extends Answer {
   user: User;
@@ -38,20 +39,36 @@ interface AnswerResponse {
   reponse: Answer;
 }
 
+interface DeletePostResponse {
+  ok: boolean;
+}
+
 const CommunityPostDetail: NextPage = () => {
   const router = useRouter();
+  const { user } = useUser();
   const { register, handleSubmit, reset } = useForm<AnswerForm>();
   const { data, mutate } = useSWR<CommunityPostResponse>(
     router.query.id ? `/api/posts/${router.query.id}` : null
   );
   const [wonder, { loading }] = useMutation(
-    `/api/posts/${router.query.id}/wonder`
+    `/api/posts/${router.query.id}/wonder`,
+    "POST"
   );
   const [sendAnswer, { data: answerData, loading: answerLoading }] =
-    useMutation<AnswerResponse>(`/api/posts/${router.query.id}/answers`);
+    useMutation<AnswerResponse>(
+      `/api/posts/${router.query.id}/answers`,
+      "POST"
+    );
+  const [deletePost, { data: deleteData, loading: deleteLoading }] =
+    useMutation<DeletePostResponse>(`/api/posts/${router.query.id}`, "DELETE");
+  const onDeleteClick = () => {
+    if (deleteLoading) return;
+    deletePost("");
+  };
   const onWonderClick = () => {
     if (!data) return;
-    mutate( // useSWR의 mutate를 사용할 때는 첫번째 인자로 key를 주지 않아도 된다. 하지만 useSWRConfig의 mutate를 사용할 때는 key를 줘야 한다.
+    mutate(
+      // useSWR의 mutate를 사용할 때는 첫번째 인자로 key를 주지 않아도 된다. 하지만 useSWRConfig의 mutate를 사용할 때는 key를 줘야 한다.
       {
         ...data,
         post: {
@@ -85,9 +102,18 @@ const CommunityPostDetail: NextPage = () => {
   return (
     <Layout canGoBack>
       <div>
-        <span className="inline-flex my-3 ml-4 items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-          동네질문
-        </span>
+        <div className="flex justify-between items-center">
+          <span className="inline-flex my-3 ml-4 items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            동네질문
+          </span>
+          {data?.post.userId === user?.id ? (
+            <div className="flex justify-between w-14 mr-3 text-xs text-gray-500">
+              <button onClick={() => {}}>수정</button>
+              <button onClick={onDeleteClick}>삭제</button>
+            </div>
+          ) : null}
+        </div>
+
         <div className="flex mb-3 px-4 cursor-pointer pb-3  border-b items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-slate-300" />
           <div>

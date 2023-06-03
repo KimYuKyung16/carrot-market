@@ -8,7 +8,7 @@ interface UseMutationState<T> { // T : generic type
 type UseMutationResult<T> = [(data: any) => void, UseMutationState<T>];
 
 // 여기에서 선언된 generic type T는 UseMutationResult, UseMutationState에서 사용되는 T와 같음.
-export default function useMutation<T = any>(url: string): UseMutationResult<T> {
+export default function useMutation<T = any>(url: string, method: string): UseMutationResult<T> {
   const [loading, setLoading] = useState(false); // 로딩 상태
   const [data, setData] = useState<undefined | any>(undefined); // 받아올 데이터
   const [error, setError] = useState<undefined | any>(undefined); // 에러
@@ -16,7 +16,7 @@ export default function useMutation<T = any>(url: string): UseMutationResult<T> 
   function mutation(data: any) {
     setLoading(true);
     fetch(url, {
-      method: "POST",
+      method,
       headers: {
         "Content-Type": "application/json"
       },

@@ -12,6 +12,7 @@ async function handler(
       body: { question, latitude, longitude },
       session: { user },
     } = req;
+    // create: 단일 레코드 생성, createMany: 여러 레코드 생성
     const post = await client.post.create({
       data: {
         question,
@@ -36,16 +37,16 @@ async function handler(
     } = req;
     const parsedLatitude = parseFloat((latitude as string | string[]).toString());
     const parsedLongitude = parseFloat((longitude as string | string[]).toString());
-    const posts = await client.post.findMany({
-      include: {
+    const posts = await client.post.findMany({ // POST 레코드를 반환
+      include: { // 반환된 개체에 어떤 관계를 불러올지 지정
         user: {
-          select: {
+          select: { // 반환 개체에 포함할 속성 지정 : USER에서 포함할 내용(id, name, avatar)
             id: true,
             name: true,
             avatar: true,
           },
         },
-        _count: {
+        _count: { // 관계가 있는 데이터의 개수 가져오기
           select: {
             wondering: true,
             answers: true,

@@ -41,7 +41,7 @@ const Streams: NextPage = () => {
     }
   );
   const [sendMessage, { loading, data: sendMessageData }] = useMutation(
-    `/api/streams/${router.query.id}/messages`
+    `/api/streams/${router.query.id}/messages`, 'POST'
   );
   const onValid = (form: MessageForm) => {
     if (loading) return;
