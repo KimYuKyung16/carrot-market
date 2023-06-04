@@ -31,6 +31,8 @@ model User {
   Purchases       Purchase[]
   Streams         Stream[]
   Messages        Message[]
+  SellerChat      Chat[]      @relation(name: "seller")
+  BuyerChat       Chat[]      @relation(name: "buyer")
 }
 
 model Token {
@@ -58,6 +60,7 @@ model Product {
   favs        Fav[]
   Sale        Sale[]
   Purchase    Purchase[]
+  Chat        Chat[]
 
   @@index([userId])
 }
@@ -184,4 +187,20 @@ model Message {
 
   @@index([userId])
   @@index([streamId])
+}
+
+model Chat {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  seller    User     @relation(name: "seller", fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId  Int
+  buyer     User     @relation(name: "buyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  buyerId   Int
+
+  @@index([productId])
+  @@index([sellerId])
+  @@index([buyerId])
 }

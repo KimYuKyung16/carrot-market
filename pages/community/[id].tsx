@@ -50,6 +50,7 @@ const CommunityPostDetail: NextPage = () => {
   const { data, mutate } = useSWR<CommunityPostResponse>(
     router.query.id ? `/api/posts/${router.query.id}` : null
   );
+
   const [wonder, { loading }] = useMutation(
     `/api/posts/${router.query.id}/wonder`,
     "POST"
@@ -118,7 +119,7 @@ const CommunityPostDetail: NextPage = () => {
           {data?.post.user.avatar ? (
             <img
               src={data.post.user.avatar}
-              className="w-14 h-14 rounded-full bg-slate-500"
+              className="w-10 h-10 rounded-full bg-slate-500"
             />
           ) : (
             <div className="w-10 h-10 rounded-full bg-slate-300" />
@@ -198,10 +199,19 @@ const CommunityPostDetail: NextPage = () => {
                   {answer.user.name}
                 </span>
                 <span className="text-xs text-gray-500 block ">
-                  {String(answer.createdAt)}
+                  {String(answer.createdAt).split('T')[0]}
+                  <span className="ml-1">
+                    {String(answer.createdAt).split('T')[1].split('.')[0]}
+                  </span>
                 </span>
                 <p className="text-gray-700 mt-2">{answer.answer} </p>
               </div>
+              {user?.id && data?.post.userId === user?.id ? (
+                <div className="flex justify-between w-14 mr-3 text-xs text-gray-500">
+                  <button onClick={() => {}}>수정</button>
+                  <button onClick={() => {}}>삭제</button>
+                </div>
+              ) : null}
             </div>
           ))}
         </div>

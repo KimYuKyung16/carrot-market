@@ -182,6 +182,3 @@ const Enter: NextPage = () => {
   );
 };
 export default Enter;
-function useFrom() {
-  throw new Error("Function not implemented.");
-}

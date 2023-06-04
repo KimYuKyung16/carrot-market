@@ -1,8 +1,26 @@
 import type { NextPage } from "next";
 import Layout from "@components/layout";
 import Message from "@components/message";
+import { io } from "socket.io-client";
 
 const ChatDetail: NextPage = () => {
+
+  const socket = io("http://localhost:5000");
+
+  // socket.connected : 소켓이 현재 서버에 연결 되어있는지 여부를 설명(true, false)
+  socket.on("connect", () => {
+    console.log(socket.id); // x8WIv7-mJelg7on_ALbx
+  });
+
+  socket.on("hello", (arg) => {
+    console.log(arg)
+  })
+  
+  socket.on("disconnect", (reason) => {
+    console.log("연결해제")
+    console.log(reason);
+  });
+
   return (
     <Layout canGoBack title="Steve">
       <div className="py-10 pb-16 px-4 space-y-4">
