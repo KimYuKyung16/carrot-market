@@ -1,11 +1,22 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { RequestHandler, Request, Response } from 'express';
+
+type NextApiRequestCustom = 
+  NextApiRequest &
+  Request & {
+    file?: any;
+  };
+
+type NextApiResponseCustom = 
+  NextApiResponse & 
+  Response;
 
 export interface ResponseType {
   ok: boolean;
   [key: string]: any;
 }
 
-type FN = (req: NextApiRequest, res: NextApiResponse) => void;
+type FN = (req: NextApiRequestCustom, res: NextApiResponseCustom) => void;
 
 type method = "GET" | "POST" | "DELETE";
 
@@ -21,8 +32,8 @@ export default function withHandler({
   handler,
 }: ConfigType) {
   return async function (
-    req: NextApiRequest,
-    res: NextApiResponse
+    req: NextApiRequestCustom,
+    res: NextApiResponseCustom
   ): Promise<any> {
     if (req.method && !methods.includes(req.method as any)) {
       return res.status(405).end();

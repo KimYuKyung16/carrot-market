@@ -16,7 +16,7 @@ model User {
   phone           String?     @unique
   email           String?     @unique
   name            String
-  avatar          String?
+  avatar          String?     @db.Text
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt // 업데이트 될 때마다 알려줌.
   Tokens          Token[]

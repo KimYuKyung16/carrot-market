@@ -6,6 +6,7 @@ import useUser from "@libs/client/useUser";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import useMutation from "@libs/client/useMutation";
+import useImageMutation from "@libs/client/useImageMutaion";
 
 interface EditProfiltForm {
   email?: string;
@@ -30,21 +31,30 @@ const EditProfile: NextPage = () => {
     formState: { errors },
     watch, // watch: 모든 폼의 변경을 감지할 수 있음.
   } = useForm<EditProfiltForm>();
+  let fd = new FormData()
   useEffect(() => {
     if (user?.name) setValue("name", user.name);
     if (user?.email) setValue("email", user.email);
     if (user?.phone) setValue("phone", user.phone);
   }, [user, setValue]);
   const [editProfile, { data, loading }] =
-    useMutation<EditProfileResponse>(`/api/users/me`, 'POST');
-  const onValid = ({ email, phone, name, avatar }: EditProfiltForm) => {
+    useImageMutation<EditProfileResponse>(`/api/users/me`, 'POST');
+    const avatar = watch("avatar");
+    const onValid = ({ email, phone, name, avatar }: EditProfiltForm) => {
     if (loading) return;
     if (email === "" && phone === "" && name === "") {
       return setError("formErrors", {
         message: "이메일 혹은 전화번호가 필요합니다. 하나를 선택하세요",
       });
     }
-    editProfile({ email, phone, name });
+
+    fd.append('email', email as string);
+    fd.append('phone', phone as string);
+    fd.append('name', name as string);
+    if (avatar && avatar.length > 0) {
+      fd.append('profileImage', avatar[0]);
+    }
+    editProfile(fd)
   };
   useEffect(() => {
     if (data && !data.ok && data.error) {
@@ -52,13 +62,14 @@ const EditProfile: NextPage = () => {
     }
   }, [data, setError]);
   const [avatarPreview, setAvatarPreview] = useState("");
-  const avatar = watch("avatar");
+
   useEffect(() => {
     if (avatar && avatar.length > 0) {
       const file = avatar[0];
       setAvatarPreview(URL.createObjectURL(file));
     }
   }, [avatar]);
+
   return (
     <Layout canGoBack title="Edit Profile">
       <form onSubmit={handleSubmit(onValid)} className="py-10 px-4 space-y-4">
@@ -69,7 +80,9 @@ const EditProfile: NextPage = () => {
               className="w-14 h-14 rounded-full bg-slate-500"
             />
           ) : (
-            <div className="w-14 h-14 rounded-full bg-slate-500" />
+            user?.avatar ? 
+              <img src={user?.avatar} className="w-14 h-14 rounded-full"/> :
+              <div className="w-14 h-14 rounded-full bg-slate-500" />
           )}
           <label
             htmlFor="picture"
