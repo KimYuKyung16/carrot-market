@@ -24,7 +24,10 @@ const ItemDetail: NextPage = () => {
   const { data, mutate } = useSWR<ItemDetailResponse>(
     router.query.id ? `/api/products/${router.query.id}` : null
   );
-  const [toggleFav] = useMutation(`/api/products/${router.query.id}/fav`, 'POST');
+  const [toggleFav] = useMutation(
+    `/api/products/${router.query.id}/fav`,
+    "POST"
+  );
   const onFavoriteClick = () => {
     toggleFav({});
     if (!data) return;
@@ -34,11 +37,21 @@ const ItemDetail: NextPage = () => {
     <Layout canGoBack>
       <div className="px-4  py-4">
         <div className="mb-8">
-          <div className="h-96 bg-slate-300" />
+          {data?.product.image ? (
+            <img src={data.product.image} className="w-full aspect-video" />
+          ) : (
+            <div className="h-96 bg-slate-300" />
+          )}
+
           <div className="flex cursor-pointer py-3 border-t border-b items-center space-x-3">
-            {data?.product.user.avatar?
-              <img src={data.product.user.avatar} className="w-12 h-12 rounded-full bg-slate-300"/>
-              : <div className="w-12 h-12 rounded-full bg-slate-300" />}
+            {data?.product.user.avatar ? (
+              <img
+                src={data.product.user.avatar}
+                className="w-12 h-12 rounded-full bg-slate-300"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-slate-300" />
+            )}
             <div>
               <p className="text-sm font-medium text-gray-700">
                 {data?.product?.user?.name}
@@ -83,13 +96,13 @@ const ItemDetail: NextPage = () => {
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="1.5"
+                    strokeWidth="1.5"
                     stroke="currentColor"
                     className="w-6 h-6"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
                     />
                   </svg>
@@ -104,7 +117,14 @@ const ItemDetail: NextPage = () => {
             {data?.relatedProducts.map((product) => (
               <Link href={`/products/${product.id}`} key={product.id}>
                 <div>
-                  <div className="h-56 w-full mb-4 bg-slate-300" />
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      className="h-56 w-full mb-4 bg-slate-300"
+                    />
+                  ) : (
+                    <div className="h-56 w-full mb-4 bg-slate-300" />
+                  )}
                   <h3 className="text-gray-700 -mb-1">{product.name}</h3>
                   <span className="text-sm font-medium text-gray-900">
                     {product.price}

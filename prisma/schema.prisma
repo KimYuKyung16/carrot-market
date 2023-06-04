@@ -51,7 +51,7 @@ model Product {
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   // 이 Product 모델의 userId에 들어가는 값은 User의 id값이라는 의미
   userId      Int
-  image       String
+  image       String     @db.Text
   name        String
   price       Int
   description String     @db.MediumText

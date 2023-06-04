@@ -19,7 +19,6 @@ interface ProductResponse {
 const Home: NextPage = () => {
   const { user, isLoading } = useUser();
   const { data } = useSWR<ProductResponse>("/api/products");
-
   return (
     <Layout title="홈" hasTabBar>
       <Head>
@@ -30,6 +29,7 @@ const Home: NextPage = () => {
           <Item
             id={product.id}
             key={product.id}
+            image={product.image}
             title={product.name}
             price={product.price}
             comments={1}
