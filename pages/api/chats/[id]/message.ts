@@ -9,25 +9,19 @@ async function handler(
 ) {
   if (req.method === "POST") {
     const {
-      body: { productId, sellerId },
+      body: { chatId, message },
       session: { user },
     } = req;
 
-    console.log(productId, sellerId);
-
-    const chat = await client.chat.create({
+    const chat = await client.chatMessage.create({
       data: {
-        product: {
+        message,
+        Chat: {
           connect: {
-            id: productId,
+            id: +chatId,
           },
         },
-        seller: {
-          connect: {
-            id: sellerId,
-          },
-        },
-        buyer: {
+        User: {
           connect: {
             id: user?.id,
           },
@@ -42,43 +36,38 @@ async function handler(
 
   if (req.method === "GET") {
     const {
-      session: { user },
+      query: { id },
     } = req;
-    const chats = await client.chat.findMany({
+
+    const productName = await client.chat.findUnique({
       include: {
         product: {
-          select: {
-            image: true,
-            name: true,
-          },
-        },
-        ChatMessage: {
-          select: {
-            message: true,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1,
-        },
-        buyer: {
-          select: {
-            name: true,
-          },
-        },
-        seller: {
           select: {
             name: true,
           },
         },
       },
       where: {
-        OR: [{ buyerId: user?.id }, { sellerId: user?.id }],
+        id: +(id as string | string[]).toString(),
+      },
+    });
+    const chatMessages = await client.chatMessage.findMany({
+      include: {
+        User: {
+          select: {
+            avatar: true,
+            name: true,
+          },
+        },
+      },
+      where: {
+        chatId: +(id as string | string[]).toString(),
       },
     });
     res.json({
       ok: true,
-      chats,
+      chatMessages,
+      productName,
     });
   }
 }

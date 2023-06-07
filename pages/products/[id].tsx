@@ -9,9 +9,11 @@ import useMutation from "@libs/client/useMutation";
 import { cls } from "@libs/client/utils";
 import { useEffect } from "react";
 import { Chat } from "@prisma/client";
+import useUser from "@libs/client/useUser";
 
 interface ProductWithUser extends Product {
   user: User;
+  Chat: [{ id: number; buyerId: string }];
 }
 
 interface ItemDetailResponse {
@@ -28,6 +30,7 @@ interface ChatResponse {
 
 const ItemDetail: NextPage = () => {
   const router = useRouter();
+  const { user, isLoading } = useUser();
   const { data, mutate } = useSWR<ItemDetailResponse>(
     router.query.id ? `/api/products/${router.query.id}` : null
   );
@@ -45,7 +48,17 @@ const ItemDetail: NextPage = () => {
     mutate({ ...data, isLiked: !data.isLiked }, false);
   };
   const onChatClick = () => {
-    if (loading) return;
+    if (loading || isLoading) return;
+    if (data?.product.userId === user?.id) {
+      // 본인이 등록한 상품일 경우
+      router.push(`/chats`);
+      return;
+    }
+    if (data?.product.Chat && data?.product.Chat.length >= 1) {
+      // 이미 채팅방이 있을 경우
+      router.push(`/chats/${data.product.Chat[0].id}`);
+      return;
+    }
     createChat({ productId: data?.product.id, sellerId: data?.product.userId });
   };
 
@@ -53,7 +66,7 @@ const ItemDetail: NextPage = () => {
     if (chatData && chatData.ok) {
       router.push(`/chats/${chatData.chat.id}`);
     }
-  }, [chatData])
+  }, [chatData]);
   return (
     <Layout canGoBack>
       <div className="px-4  py-4">

@@ -8,7 +8,7 @@ import useSWR from "swr";
 import { Fav, Product } from "@prisma/client";
 
 export interface ProductWithCount extends Product {
-  _count: { favs: number };
+  _count: { favs: number; Chat: number };
 }
 
 interface ProductResponse {
@@ -17,8 +17,8 @@ interface ProductResponse {
 }
 
 const Home: NextPage = () => {
-  const { user, isLoading } = useUser();
   const { data } = useSWR<ProductResponse>("/api/products");
+
   return (
     <Layout title="홈" hasTabBar>
       <Head>
@@ -32,7 +32,7 @@ const Home: NextPage = () => {
             image={product.image}
             title={product.name}
             price={product.price}
-            comments={1}
+            comments={product._count.Chat}
             hearts={product._count.favs}
           />
         ))}

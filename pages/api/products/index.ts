@@ -33,7 +33,6 @@ const upload = multer({
       cb(null, `product/${Date.now()}_${file.originalname}`);
     },
   }),
-  // limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 async function handler(
@@ -46,6 +45,7 @@ async function handler(
         _count: {
           select: {
             favs: true,
+            Chat: true,
           },
         },
       },

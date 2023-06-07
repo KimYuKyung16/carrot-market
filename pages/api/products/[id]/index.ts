@@ -24,6 +24,15 @@ async function handler(
           avatar: true,
         },
       },
+      Chat: {
+        select: {
+          id: true,
+          buyerId: true,
+        },
+        where: {
+          buyerId: user?.id,
+        },
+      },
     },
   });
   const terms = product?.name.split(" ").map((word) => ({
@@ -49,7 +58,7 @@ async function handler(
       },
       select: {
         id: true,
-      }
+      },
     })
   );
   res.json({ ok: true, product, isLiked, relatedProducts });

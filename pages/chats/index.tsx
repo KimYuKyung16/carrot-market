@@ -3,17 +3,21 @@ import Link from "next/link";
 import Layout from "@components/layout";
 import useSWR from "swr";
 import { Chat } from "@prisma/client";
+import useUser from "@libs/client/useUser";
 
-export interface ChatWithProduct extends Chat {
+interface ChatWithProduct extends Chat {
   product: { image: string; name: string };
+  ChatMessage?: [{ message?: string }];
+  buyer: { name: string };
+  seller: { name: string };
 }
-
 interface ChatResponse {
   ok: boolean;
   chats: ChatWithProduct[];
 }
 
 const Chats: NextPage = () => {
+  const { user, isLoading } = useUser();
   const { data } = useSWR<ChatResponse>(`/api/chats`);
 
   return (
@@ -32,9 +36,21 @@ const Chats: NextPage = () => {
               )}
 
               <div>
-                <p className="text-gray-700">{chat.product.name}</p>
+                <div className="flex space-x-2 items-center">
+                  <p className="text-gray-700">
+                    {chat.buyerId === user?.id
+                      ? chat.seller.name
+                      : chat.buyer.name}
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    <span className="text-orange-500">판매물품</span>
+                    {` (${chat.product.name})`}
+                  </p>
+                </div>
                 <p className="text-sm  text-gray-500">
-                  See you tomorrow in the corner at 2pm!
+                  {chat.ChatMessage && chat.ChatMessage.length > 0
+                    ? chat.ChatMessage[0].message
+                    : "아직 대화가 없습니다"}
                 </p>
               </div>
             </a>
