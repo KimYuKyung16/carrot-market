@@ -72,7 +72,7 @@ export default function NotificationMessage({
     }
     if (senderId === user?.id) {
       // 본인 물품일 경우
-      alert("본인이 거래를 완료할 수 없습니다");
+      swal("본인이 거래를 완료할 수 없습니다", "", "warning");
       return;
     }
     socket.emit("message", {

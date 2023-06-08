@@ -96,7 +96,7 @@ const ChatDetail: NextPage = () => {
 
   const onClickSendBtn = () => {
     if ((!router.query.id && !user) || loading) {
-      alert("메시지 전송에 실패했습니다.");
+      swal("메시지 전송에 실패했습니다.");
       return;
     }
     if (!sendRef.current) return;
@@ -168,7 +168,10 @@ const ChatDetail: NextPage = () => {
       <Layout
         canGoBack
         title={messageList?.productName.product.name}
-        chat={{ onClickTranscation: onClickTransactionBtn, product_userId: productData?.product.userId }}
+        chat={{
+          onClickTranscation: onClickTransactionBtn,
+          product_userId: productData?.product.userId,
+        }}
       >
         <div ref={scrollRef} className="py-10 pb-16 px-4 space-y-4">
           {existMessage

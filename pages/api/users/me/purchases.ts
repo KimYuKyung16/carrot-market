@@ -12,12 +12,9 @@ async function handler(
   } = req;
   const purchases = await client.purchase.findMany({
     where: {
-      userId: user?.id
+      userId: user?.id,
     },
-    include: {
-      product: true,
-    },
-  })
+  });
   res.json({
     ok: true,
     purchases,

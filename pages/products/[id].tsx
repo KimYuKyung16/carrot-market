@@ -10,6 +10,7 @@ import { cls } from "@libs/client/utils";
 import { useEffect } from "react";
 import { Chat } from "@prisma/client";
 import useUser from "@libs/client/useUser";
+import swal from "sweetalert";
 
 interface ProductWithUser extends Product {
   user: User;
@@ -28,6 +29,10 @@ interface ChatResponse {
   chat: Chat;
 }
 
+interface DeleteProductResponse {
+  ok: boolean;
+}
+
 const ItemDetail: NextPage = () => {
   const router = useRouter();
   const { user, isLoading } = useUser();
@@ -42,6 +47,28 @@ const ItemDetail: NextPage = () => {
     `/api/chats`,
     "POST"
   );
+  const [deleteProduct, { data: deleteData, loading: deleteLoading }] =
+    useMutation<DeleteProductResponse>(
+      `/api/products/${router.query.id}`,
+      "DELETE"
+    );
+  const onDeleteClick = () => {
+    if (deleteLoading) return;
+    swal({
+      title: "정말 삭제하시겠습니까?",
+      text: "삭제 시 관련 채팅 및 판매내역도 삭제됩니다",
+      icon: "warning",
+      buttons: true as unknown as undefined,
+      dangerMode: true,
+    }).then((willDelete) => {
+      if (willDelete) {
+        swal("성공적으로 삭제되었습니다.", {
+          icon: "success",
+        });
+        deleteProduct("");
+      }
+    });
+  };
   const onFavoriteClick = () => {
     toggleFav({});
     if (!data) return;
@@ -61,12 +88,17 @@ const ItemDetail: NextPage = () => {
     }
     createChat({ productId: data?.product.id, sellerId: data?.product.userId });
   };
-
   useEffect(() => {
     if (chatData && chatData.ok) {
       router.push(`/chats/${chatData.chat.id}`);
     }
   }, [chatData]);
+  useEffect(() => {
+    if (deleteData && deleteData?.ok) {
+      router.push(`/`);
+    }
+  }, [deleteData]);
+
   return (
     <Layout canGoBack>
       <div className="px-4  py-4">
@@ -98,11 +130,24 @@ const ItemDetail: NextPage = () => {
             </div>
           </div>
           <div className="mt-5">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {data?.product?.name}
-            </h1>
+            <div className="flex justify-between items-start">
+              <h1 className="flex items-center flex-wrap text-3xl font-bold text-gray-900">
+                {data?.product?.name}
+                {data?.product.state ? (
+                  <span className="bg-orange-400 text-white text-base font-normal rounded-md px-2 py-1  ml-1">
+                    거래완료
+                  </span>
+                ) : null}
+              </h1>
+              {user && data?.product.userId === user.id ? (
+                <div className="flex space-x-2 justify-between w-14 mr-3 text-sm text-gray-500 whitespace-nowrap">
+                  <button onClick={() => {}}>수정</button>
+                  <button onClick={onDeleteClick}>삭제</button>
+                </div>
+              ) : null}
+            </div>
             <span className="text-2xl block mt-3 text-gray-900">
-              {data?.product?.price}
+              {data?.product?.price} 원
             </span>
             <p className=" my-6 text-gray-700">{data?.product?.description} </p>
             <div className="flex items-center justify-between space-x-2">

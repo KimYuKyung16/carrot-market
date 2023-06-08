@@ -50,7 +50,6 @@ const CommunityPostDetail: NextPage = () => {
   const { data, mutate } = useSWR<CommunityPostResponse>(
     router.query.id ? `/api/posts/${router.query.id}` : null
   );
-
   const [wonder, { loading }] = useMutation(
     `/api/posts/${router.query.id}/wonder`,
     "POST"
@@ -99,6 +98,11 @@ const CommunityPostDetail: NextPage = () => {
       mutate(); // 인자가 없을 경우 해당 useSWR을 재검증하기만 한다.
     }
   }, [answerData, reset, mutate]);
+  useEffect(() => {
+    if (deleteData && deleteData?.ok) {
+      router.push(`/community`);
+    }
+  }, [deleteData]);
 
   return (
     <Layout canGoBack>
@@ -199,9 +203,9 @@ const CommunityPostDetail: NextPage = () => {
                   {answer.user.name}
                 </span>
                 <span className="text-xs text-gray-500 block ">
-                  {String(answer.createdAt).split('T')[0]}
+                  {String(answer.createdAt).split("T")[0]}
                   <span className="ml-1">
-                    {String(answer.createdAt).split('T')[1].split('.')[0]}
+                    {String(answer.createdAt).split("T")[1].split(".")[0]}
                   </span>
                 </span>
                 <p className="text-gray-700 mt-2">{answer.answer} </p>

@@ -19,17 +19,13 @@ async function handler(
   if (productInfo) {
     const purchase = await client.purchase.create({
       data: {
+        productId: productInfo.id,
         productName: productInfo.name,
         productPrice: productInfo.price,
         productImage: productInfo.image,
         user: {
           connect: {
             id: user?.id,
-          },
-        },
-        product: {
-          connect: {
-            id: productId,
           },
         },
       },
