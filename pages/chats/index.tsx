@@ -6,7 +6,7 @@ import { Chat } from "@prisma/client";
 import useUser from "@libs/client/useUser";
 
 interface ChatWithProduct extends Chat {
-  product: { image: string; name: string };
+  product: { image: string; name: string; state: boolean };
   ChatMessage?: [{ message?: string }];
   buyer: { name: string };
   seller: { name: string };
@@ -44,7 +44,12 @@ const Chats: NextPage = () => {
                   </p>
                   <p className="text-gray-500 text-sm">
                     <span className="text-orange-500">판매물품</span>
-                    {` (${chat.product.name})`}
+                    {` (${chat.product.name}) `}
+                    {chat.product.state ? (
+                      <span className="bg-orange-500 rounded-md text-white p-1 text-xs">
+                        거래완료
+                      </span>
+                    ) : null}
                   </p>
                 </div>
                 <p className="text-sm  text-gray-500">

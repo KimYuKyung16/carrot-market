@@ -4,6 +4,7 @@ interface ItemProps {
   image: string;
   title: string;
   id: number;
+  state: boolean;
   price: number;
   comments: number;
   hearts: number;
@@ -12,6 +13,7 @@ interface ItemProps {
 export default function Item({
   image,
   title,
+  state,
   price,
   comments,
   hearts,
@@ -27,7 +29,14 @@ export default function Item({
             <div className="w-20 h-20 bg-gray-400 rounded-md" />
           )}
           <div className="pt-2 flex flex-col">
-            <h3 className="text-sm font-medium text-gray-900">{title}</h3>
+            <div className="flex items-center space-x-1">
+              <h3 className="text-sm font-medium text-gray-900">{title}</h3>
+              {state ? (
+                <span className="bg-orange-500 rounded-md text-white py-0.5 px-1 text-xs">
+                  거래완료
+                </span>
+              ) : null}
+            </div>
             <span className="font-medium mt-1 text-gray-900">${price}</span>
           </div>
         </div>

@@ -18,7 +18,7 @@ export interface ResponseType {
 
 type FN = (req: NextApiRequestCustom, res: NextApiResponseCustom) => void;
 
-type method = "GET" | "POST" | "DELETE";
+type method = "GET" | "POST" | "DELETE" | "PUT";
 
 interface ConfigType {
   methods: method[];

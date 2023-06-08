@@ -2,12 +2,15 @@ import React from "react";
 import Link from "next/link";
 import { cls } from "@libs/client/utils";
 import { useRouter } from "next/router";
+import Button from "@components/button";
 
 interface LayoutProps {
   title?: string;
   canGoBack?: boolean;
   hasTabBar?: boolean;
   children: React.ReactNode;
+  chat?: { onClickTranscation: () => void };
+  [key: string]: any;
 }
 
 export default function Layout({
@@ -15,6 +18,7 @@ export default function Layout({
   canGoBack,
   hasTabBar,
   children,
+  chat,
 }: LayoutProps) {
   const router = useRouter();
   const onClick = () => {
@@ -43,6 +47,16 @@ export default function Layout({
         ) : null}
         {title ? (
           <span className={cls(canGoBack ? "mx-auto" : "", "")}>{title}</span>
+        ) : null}
+        {chat ? (
+          <button
+            onClick={chat.onClickTranscation}
+            className={
+              "flex items-center h-3/5 bg-orange-500 hover:bg-orange-600 text-white  px-4 border border-transparent rounded-md shadow-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none py-2 text-sm"
+            }
+          >
+            거래
+          </button>
         ) : null}
       </div>
       <div className={cls("pt-12", hasTabBar ? "pb-24" : "")}>{children}</div>

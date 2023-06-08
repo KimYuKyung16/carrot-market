@@ -62,6 +62,7 @@ model Product {
   Sale        Sale[]
   Purchase    Purchase[]
   Chat        Chat[]
+  state       Boolean    @default(false)
 
   @@index([userId])
 }
@@ -208,14 +209,15 @@ model Chat {
 }
 
 model ChatMessage {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  message   String   @db.MediumText
-  Chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  chatId    Int
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  message      String   @db.MediumText
+  Chat         Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId       Int
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  notification Boolean  @default(false)
 
   @@index([chatId])
   @@index([userId])

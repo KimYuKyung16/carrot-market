@@ -9,7 +9,7 @@ async function handler(
 ) {
   if (req.method === "POST") {
     const {
-      body: { chatId, message },
+      body: { chatId, message, notification },
       session: { user },
     } = req;
 
@@ -26,6 +26,7 @@ async function handler(
             id: user?.id,
           },
         },
+        notification,
       },
     });
     res.json({
@@ -44,6 +45,8 @@ async function handler(
         product: {
           select: {
             name: true,
+            id: true,
+            state: true,
           },
         },
       },

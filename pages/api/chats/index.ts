@@ -50,6 +50,7 @@ async function handler(
           select: {
             image: true,
             name: true,
+            state: true,
           },
         },
         ChatMessage: {
