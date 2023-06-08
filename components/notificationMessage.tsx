@@ -4,7 +4,7 @@ import { cls } from "@libs/client/utils";
 import { ChatMessage, Message, Product, User } from "@prisma/client";
 import { io } from "socket.io-client";
 import useSWR from "swr";
-import swal from 'sweetalert';
+import swal from "sweetalert";
 
 interface ProductInfo {
   product: Product;
@@ -56,6 +56,8 @@ export default function NotificationMessage({
       productId ? `/api/products/${productId}/state` : "",
       "PUT"
     );
+  const [savePurchase, { loading: purchaseLoading }] =
+    useMutation<MessageResponse>(`/api/chats/${chatId}/purchases`, "POST");
   const { data: productData } = useSWR<ProductInfo>(
     productId ? `/api/products/${productId}` : null
   );
@@ -65,7 +67,7 @@ export default function NotificationMessage({
     if (!productData?.product || productData?.product.state) {
       // 거래가 끝난 물품일 경우
       if (!productData?.product) return;
-      swal("이미 거래가 끝난 물품입니다", "", 'warning');
+      swal("이미 거래가 끝난 물품입니다", "", "warning");
       return;
     }
     if (senderId === user?.id) {
@@ -89,11 +91,10 @@ export default function NotificationMessage({
       message: notificationMessage,
       notification: true,
     });
-
     if (notificationMessage === "거래가 완료되었습니다") {
-      updateProductState({
-        productId,
-      });
+      if (!productId) return;
+      updateProductState({ productId }); // 제품 거래 여부
+      savePurchase({ productId }); // 구매내역 추가
     }
   };
 

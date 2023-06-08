@@ -168,7 +168,7 @@ const ChatDetail: NextPage = () => {
       <Layout
         canGoBack
         title={messageList?.productName.product.name}
-        chat={{ onClickTranscation: onClickTransactionBtn }}
+        chat={{ onClickTranscation: onClickTransactionBtn, product_userId: productData?.product.userId }}
       >
         <div ref={scrollRef} className="py-10 pb-16 px-4 space-y-4">
           {existMessage

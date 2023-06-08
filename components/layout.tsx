@@ -3,13 +3,14 @@ import Link from "next/link";
 import { cls } from "@libs/client/utils";
 import { useRouter } from "next/router";
 import Button from "@components/button";
+import useUser from "@libs/client/useUser";
 
 interface LayoutProps {
   title?: string;
   canGoBack?: boolean;
   hasTabBar?: boolean;
   children: React.ReactNode;
-  chat?: { onClickTranscation: () => void };
+  chat?: { onClickTranscation: () => void; product_userId?: number; };
   [key: string]: any;
 }
 
@@ -21,6 +22,7 @@ export default function Layout({
   chat,
 }: LayoutProps) {
   const router = useRouter();
+  const { user, isLoading } = useUser();
   const onClick = () => {
     router.back();
   };
@@ -48,7 +50,7 @@ export default function Layout({
         {title ? (
           <span className={cls(canGoBack ? "mx-auto" : "", "")}>{title}</span>
         ) : null}
-        {chat ? (
+        {chat && !isLoading && user &&  chat.product_userId === user.id ? (
           <button
             onClick={chat.onClickTranscation}
             className={

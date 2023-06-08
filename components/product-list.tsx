@@ -3,12 +3,15 @@ import useSWR from "swr";
 import Item from "./item";
 
 interface ProductListProps {
-  kind: "favs" | "sales" | "purchases";
+  kind: "favs" | "purchases";
 }
 
 interface Record {
   id: number;
   product: ProductWithCount;
+  productName: string;
+  productImage: string;
+  productPrice: number;
 }
 
 interface ProductListResponse {
@@ -17,18 +20,24 @@ interface ProductListResponse {
 
 export default function ProductList({ kind }: ProductListProps) {
   const { data } = useSWR<ProductListResponse>(`/api/users/me/${kind}`);
+
+  console.log(data);
   return data ? (
     <>
       {data[kind]?.map((record) => (
         <Item
-          id={record.product.id}
+          id={record.product.id ? record.product.id : undefined}
           key={record.id}
-          image={record.product.image}
-          title={record.product.name}
-          state={record.product.state}
-          price={record.product.price}
-          hearts={record.product._count.favs}
-          comments={0}
+          image={record.product.image ? record.product.image : record.productImage}
+          title={record.product.name ? record.product.name : record.productName}
+          state={record.product.state ? record.product.state : true}
+          price={record.product.price ? record.product.price : record.productPrice}
+          hearts={
+            record.product._count ? record.product._count.favs : undefined
+          }
+          comments={
+            record.product._count ? record.product._count.Chat : undefined
+          }
         />
       ))}
     </>

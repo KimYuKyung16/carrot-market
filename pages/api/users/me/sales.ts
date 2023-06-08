@@ -7,21 +7,20 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
+  console.log("test")
   const {
     session: { user },
   } = req;
-  const sales = await client.sale.findMany({
+  const sales = await client.product.findMany({
     where: {
-      userId: user?.id
+      userId: user?.id,
+      state: true
     },
     include: {
-      product: {
-        include: {
-          _count: {
-            select: {
-              favs: true,
-            },
-          },
+      _count: {
+        select: {
+          favs: true,
+          Chat: true,
         },
       },
     },

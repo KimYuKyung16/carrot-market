@@ -15,15 +15,7 @@ async function handler(
       userId: user?.id
     },
     include: {
-      product: {
-        include: {
-          _count: {
-            select: {
-              favs: true,
-            },
-          },
-        },
-      },
+      product: true,
     },
   })
   res.json({
