@@ -86,6 +86,10 @@ const ItemDetail: NextPage = () => {
       router.push(`/chats/${data.product.Chat[0].id}`);
       return;
     }
+    if (data?.product.state) { // 거래가 완료된 물품일 경우
+      swal("이미 거래가 끝난 물품입니다", "", "warning");
+      return;
+    } 
     createChat({ productId: data?.product.id, sellerId: data?.product.userId });
   };
   useEffect(() => {
