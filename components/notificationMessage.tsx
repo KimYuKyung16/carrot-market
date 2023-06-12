@@ -1,10 +1,12 @@
 import useMutation from "@libs/client/useMutation";
 import useUser from "@libs/client/useUser";
 import { cls } from "@libs/client/utils";
-import { ChatMessage, Message, Product, User } from "@prisma/client";
+import { Chat, ChatMessage, Message, Product, User } from "@prisma/client";
 import { io } from "socket.io-client";
 import useSWR from "swr";
 import swal from "sweetalert";
+import { useEffect } from "react";
+import { MessageListResponse } from "pages/chats/[id]";
 
 interface ProductInfo {
   product: Product;
@@ -24,6 +26,7 @@ interface NotificationMessageProps {
   productId?: string;
   existMessage: message[];
   chatId?: string | string[];
+  existMessageIndex: number;
 }
 
 interface MessageResponse {
@@ -44,9 +47,14 @@ export default function NotificationMessage({
   reversed,
   senderId,
   productId,
+  existMessage,
   chatId,
+  existMessageIndex,
 }: NotificationMessageProps) {
   const { user, isLoading } = useUser();
+  const { data: messageList, mutate } = useSWR<MessageListResponse>( // 기존에 있던 메시지 리스트
+    chatId ? `/api/chats/${chatId}/message` : null
+  );
   const [saveMessage, { loading }] = useMutation<MessageResponse>(
     `/api/chats/${chatId}/message`,
     "POST"
@@ -61,7 +69,11 @@ export default function NotificationMessage({
   const { data: productData } = useSWR<ProductInfo>(
     productId ? `/api/products/${productId}` : null
   );
-
+  const [deleteMessage, { loading: deleteLoading }] =
+    useMutation<ProductResponse>(
+      chatId ? `/api/chats/${chatId}/message` : "",
+      "DELETE"
+    );
   const sendNotification = (notificationMessage: string) => {
     if (loading || updateLoading || isLoading || !productId || !chatId) return;
     if (!productData?.product || productData?.product.state) {
@@ -97,6 +109,30 @@ export default function NotificationMessage({
       savePurchase({ productId }); // 구매내역 추가
     }
   };
+  const onClickCancel = () => {
+    if (loading || updateLoading || isLoading || deleteLoading) return;
+    if (!chatId) return;
+    if (!productData?.product || productData?.product.state) {
+      // 거래가 끝난 물품일 경우
+      if (!productData?.product) return;
+      swal("이미 거래가 끝난 물품입니다", "", "warning");
+      return;
+    }
+
+    if (!messageList || !messageList.chatMessages[existMessageIndex]) return;
+    deleteMessage({ id: messageList.chatMessages[existMessageIndex].id });
+
+    let nexistMessage = [...existMessage];
+    nexistMessage.splice(existMessageIndex, 1);
+    socket.emit("deleteMessage", {
+      roomNum: chatId,
+      message: nexistMessage,
+    });
+  };
+
+  useEffect(() => {
+    mutate();
+  }, [existMessage]);
 
   return (
     <div
@@ -135,23 +171,33 @@ export default function NotificationMessage({
             <p className="text-lg font-semibold">{message}</p>
             {message === "거래가 취소되었습니다" ||
             message === "거래가 완료되었습니다" ? null : (
-              <div className="flex justify-center space-x-3 w-full">
-                <button
-                  onClick={() => {
-                    sendNotification("거래가 완료되었습니다");
-                  }}
-                  className="font-extrabold w-1/2 bg-white border-2 text-orange-500 border-white py-1 px-3 hover:bg-gray-100 rounded-md shadow-sm"
-                >
-                  수락
-                </button>
-                <button
-                  onClick={() => {
-                    sendNotification("거래가 취소되었습니다");
-                  }}
-                  className="font-extrabold  w-1/2 border-2 border-white py-1 px-3 hover:bg-orange-600 rounded-md shadow-sm"
-                >
-                  거절
-                </button>
+              <div className="flex flex-col w-full space-y-2">
+                <div className="flex justify-center space-x-3 w-full">
+                  <button
+                    onClick={() => {
+                      sendNotification("거래가 완료되었습니다");
+                    }}
+                    className="font-extrabold w-1/2 bg-white border-2 text-orange-500 border-white py-1 px-3 hover:bg-gray-100 rounded-md shadow-sm"
+                  >
+                    수락
+                  </button>
+                  <button
+                    onClick={() => {
+                      sendNotification("거래가 취소되었습니다");
+                    }}
+                    className="font-extrabold  w-1/2 border-2 border-white py-1 px-3 hover:bg-orange-600 rounded-md shadow-sm"
+                  >
+                    거절
+                  </button>
+                </div>
+                {user?.id === senderId ? (
+                  <button
+                    onClick={onClickCancel}
+                    className="font-extrabold w-full bg-yellow-100 border-2 text-orange-500 border-yellow-100 py-1 px-3 hover:bg-yellow-200 rounded-md shadow-sm"
+                  >
+                    취소하기
+                  </button>
+                ) : null}
               </div>
             )}
           </div>

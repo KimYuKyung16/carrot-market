@@ -7,6 +7,9 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
+  const {
+    query: { id },
+  } = req;
   if (req.method === "POST") {
     const {
       body: { chatId, message, notification },
@@ -34,12 +37,7 @@ async function handler(
       chat,
     });
   }
-
   if (req.method === "GET") {
-    const {
-      query: { id },
-    } = req;
-
     const productName = await client.chat.findUnique({
       include: {
         product: {
@@ -73,10 +71,24 @@ async function handler(
       productName,
     });
   }
+  if (req.method === "DELETE") {
+    const {
+      body: { id: chatMessageId },
+      session: { user },
+    } = req;
+    const message = await client.chatMessage.delete({
+      where: {
+        id: +(chatMessageId as string | string[]).toString(),
+      }
+    })
+    res.json({
+      ok: true,
+    });
+  }
 }
 export default withApiSession(
   withHandler({
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "DELETE"],
     handler,
   })
 );

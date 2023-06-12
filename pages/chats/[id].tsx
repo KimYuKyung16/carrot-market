@@ -10,7 +10,6 @@ import useUser from "@libs/client/useUser";
 import useSWR from "swr";
 import { getDateTime } from "@libs/client/getDateTime";
 import NotificationMessage from "@components/notificationMessage";
-import Button from "@components/button";
 import { cls } from "@libs/client/utils";
 import swal from "sweetalert";
 
@@ -32,7 +31,7 @@ interface ChatWithProduct extends Chat {
   product: { name: string; id: string; state: string };
 }
 
-interface MessageListResponse {
+export interface MessageListResponse {
   ok: boolean;
   chatMessages: MessageListWithUser[];
   productName: ChatWithProduct;
@@ -59,6 +58,7 @@ const ChatDetail: NextPage = () => {
   const [modal, setModal] = useState(true);
   const [existMessage, setExistMessage] = useState<any[]>([]);
   const [sendMessage, setSendMessage] = useState("");
+
   const onChangeTest = (e: any) => {
     setSendMessage(e.target.value);
   };
@@ -76,31 +76,44 @@ const ChatDetail: NextPage = () => {
       swal("이미 거래가 끝난 물품입니다", "", "warning");
       return;
     }
-    socket.emit("message", {
-      roomNum: router.query.id,
-      message: {
-        avatar: user?.avatar,
-        name: user?.name,
-        userId: user?.id,
-        createdAt: new Date(),
-        message: "거래를 완료하시겠습니까?",
-        notification: true,
-      },
-    });
-    saveMessage({
-      chatId: router.query.id,
-      message: "거래를 완료하시겠습니까?",
-      notification: true,
+    swal({
+      title: "거래하시겠습니까?",
+      text: "",
+      icon: "warning",
+      buttons: ["취소", "확인"],
+      dangerMode: true,
+    }).then((willAgree) => {
+      if (willAgree) {
+        socket.emit("message", {
+          roomNum: router.query.id,
+          message: {
+            avatar: user?.avatar,
+            name: user?.name,
+            userId: user?.id,
+            createdAt: new Date(),
+            message: "거래를 완료하시겠습니까?",
+            notification: true,
+          },
+        });
+        saveMessage({
+          chatId: router.query.id,
+          message: "거래를 완료하시겠습니까?",
+          notification: true,
+        });
+      } else {
+        swal("거래를 취소했습니다");
+      }
     });
   };
 
-  const onClickSendBtn = () => {
+  const onClickSendBtn = async () => {
     if ((!router.query.id && !user) || loading) {
       swal("메시지 전송에 실패했습니다.");
       return;
     }
     if (!sendRef.current) return;
     sendRef.current.value = "";
+    saveMessage({ chatId: router.query.id, message: sendMessage });
     socket.emit("message", {
       roomNum: router.query.id,
       message: {
@@ -111,7 +124,6 @@ const ChatDetail: NextPage = () => {
         message: sendMessage,
       },
     });
-    saveMessage({ chatId: router.query.id, message: sendMessage });
   };
 
   useEffect(() => {
@@ -128,17 +140,20 @@ const ChatDetail: NextPage = () => {
       ]);
     });
 
+    socket.on("delete Message", (msg: any) => {
+      setExistMessage(msg);
+    });
+
     return () => {
       socket.off("send Message");
+      socket.off("delete Message");
       socket.emit("leaveRoom", String(router.query.id));
     };
   }, [user]);
-
   useEffect(() => {
     // socket room 떠나기
     socket.emit("setRoomNum", router.query.id);
   }, [router]);
-
   useEffect(() => {
     // 스크롤 제일 아래로
     if (!scrollRef.current) return;
@@ -182,23 +197,24 @@ const ChatDetail: NextPage = () => {
                 return message.notification ? (
                   <NotificationMessage
                     key={i}
-                    date={hour + ":" + minute}
-                    name={message.User.name}
                     message={message.message}
                     avatarUrl={message.User.avatar}
+                    date={hour + ":" + minute}
+                    name={message.User.name}
+                    reversed={user?.id === message.userId}
                     senderId={message.userId}
                     productId={messageList?.productName.product.id}
                     existMessage={existMessage}
                     chatId={router.query.id}
-                    reversed={user?.id === message.userId}
+                    existMessageIndex={i}
                   />
                 ) : (
                   <Message
                     key={i}
-                    date={hour + ":" + minute}
-                    name={message.User.name}
                     message={message.message}
                     avatarUrl={message.User.avatar}
+                    date={hour + ":" + minute}
+                    name={message.User.name}
                     reversed={user?.id === message.userId}
                   />
                 );
@@ -216,12 +232,10 @@ const ChatDetail: NextPage = () => {
               <div className="absolute inset-y-0 flex py-1.5 pr-1.5 right-0">
                 <input
                   type="button"
-                  value="→"
+                  value="&rarr;"
                   onClick={onClickSendBtn}
                   className="flex focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 items-center bg-orange-500 rounded-full px-3 hover:bg-orange-600 text-sm text-white"
-                >
-                  {/* &rarr; */}
-                </input>
+                ></input>
               </div>
             </div>
           </form>

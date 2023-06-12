@@ -11,13 +11,14 @@ export default function useCoords() {
     longitude: null,
   });
   const onSuccess = ({
-    coords: { latitude, longitude },
+    coords: { latitude, longitude }, // 위도, 경도
   }: GeolocationPosition) => {
-    setCoords({latitude, longitude});
+    setCoords({latitude, longitude}); // 위도, 경도 설정
   };
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(onSuccess);
+    // getCurrentPosition 현재 위치 가져오는 작업
   }, []);
   return coords;
 }
