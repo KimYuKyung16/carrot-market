@@ -100,7 +100,7 @@ const ItemDetail: NextPage = () => {
   }, [chatData]);
   useEffect(() => {
     if (deleteData && deleteData?.ok) {
-      router.push(`/`);
+      router.back();
     }
   }, [deleteData]);
   useEffect(() => {

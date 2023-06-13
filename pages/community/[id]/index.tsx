@@ -10,6 +10,7 @@ import { cls } from "@libs/client/utils";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import useUser from "@libs/client/useUser";
+import swal from "sweetalert";
 
 interface AnswerWithUser extends Answer {
   user: User;
@@ -63,7 +64,19 @@ const CommunityPostDetail: NextPage = () => {
     useMutation<DeletePostResponse>(`/api/posts/${router.query.id}`, "DELETE");
   const onDeleteClick = () => {
     if (deleteLoading) return;
-    deletePost("");
+    swal({
+      title: "정말 삭제하시겠습니까?",
+      icon: "warning",
+      buttons: true as unknown as undefined,
+      dangerMode: true,
+    }).then((willDelete) => {
+      if (willDelete) {
+        swal("성공적으로 삭제되었습니다.", {
+          icon: "success",
+        });
+        deletePost("");
+      }
+    });
   };
   const onWonderClick = () => {
     if (!data) return;
@@ -100,7 +113,7 @@ const CommunityPostDetail: NextPage = () => {
   }, [answerData, reset, mutate]);
   useEffect(() => {
     if (deleteData && deleteData?.ok) {
-      router.push(`/community`);
+      router.back();
     }
   }, [deleteData]);
 

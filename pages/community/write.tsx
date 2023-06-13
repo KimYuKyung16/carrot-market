@@ -29,7 +29,7 @@ const Write: NextPage = () => {
   };
   useEffect(() => {
     if (data && data.ok) {
-      router.push(`/community/${data.post.id}`);
+      router.replace(`/community/${data.post.id}`);
     }
   }, [data]);
   return (
