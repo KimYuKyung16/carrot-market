@@ -24,7 +24,7 @@ interface PostWithUser extends Post {
   answers: AnswerWithUser[];
 }
 
-interface CommunityPostResponse {
+export interface CommunityPostResponse {
   ok: boolean;
   post: PostWithUser;
   isWondering: boolean;
@@ -113,7 +113,7 @@ const CommunityPostDetail: NextPage = () => {
           </span>
           {user?.id && data?.post.userId === user?.id ? (
             <div className="flex justify-between w-14 mr-3 text-xs text-gray-500">
-              <button onClick={() => {}}>수정</button>
+              <button onClick={() => {router.push(`/community/${router.query.id}/edit`)}}>수정</button>
               <button onClick={onDeleteClick}>삭제</button>
             </div>
           ) : null}

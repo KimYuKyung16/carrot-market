@@ -7,12 +7,12 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
-  console.log(req.method)
-  if (req.method === "GET") { // 커뮤니티 글 상세사항을 불러오고 싶을 경우
-    const {
-      query: { id },
-      session: { user },
-    } = req;
+  const {
+    query: { id },
+    session: { user },
+  } = req;
+  if (req.method === "GET") {
+    // 커뮤니티 글 상세사항을 불러오고 싶을 경우
     const post = await client.post.findUnique({
       where: {
         id: +(id as string | string[]).toString(),
@@ -65,17 +65,32 @@ async function handler(
       isWondering,
     });
   }
-
-  if (req.method === "DELETE") { // 커뮤니티 글 상세사항을 삭제하고 싶을 경우
+  if (req.method === "PUT") {
+    // 커뮤니티 글 상세사항을 수정하고 싶을 경우
     const {
-      query: { id },
+      body: { question },
     } = req;
-
+    if (question) {
+      await client.post.update({
+        where: {
+          id: +(id as string | string[]).toString(),
+        },
+        data: {
+          question,
+        },
+      });
+      res.json({
+        ok: true,
+      });
+    }
+  }
+  if (req.method === "DELETE") {
+    // 커뮤니티 글 상세사항을 삭제하고 싶을 경우
     const post = await client.post.delete({
       where: {
         id: +(id as string | string[]).toString(),
       },
-    })
+    });
 
     res.json({
       ok: true,
@@ -84,7 +99,7 @@ async function handler(
 }
 export default withApiSession(
   withHandler({
-    methods: ["GET", "DELETE"],
+    methods: ["GET", "DELETE", "PUT"],
     handler,
   })
 );

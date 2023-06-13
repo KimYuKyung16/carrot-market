@@ -57,7 +57,7 @@ const Edit: NextPage = () => {
   };
   useEffect(() => {
     if (data?.ok) {
-      router.push(`/products/${router.query.id}`);
+      router.back();
     }
   }, [data, router]);
 
