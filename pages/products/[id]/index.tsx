@@ -17,7 +17,7 @@ interface ProductWithUser extends Product {
   Chat: [{ id: number; buyerId: string }];
 }
 
-interface ItemDetailResponse {
+export interface ItemDetailResponse {
   ok: boolean;
   product: ProductWithUser;
   relatedProducts: Product[];
@@ -86,10 +86,11 @@ const ItemDetail: NextPage = () => {
       router.push(`/chats/${data.product.Chat[0].id}`);
       return;
     }
-    if (data?.product.state) { // 거래가 완료된 물품일 경우
+    if (data?.product.state) {
+      // 거래가 완료된 물품일 경우
       swal("이미 거래가 끝난 물품입니다", "", "warning");
       return;
-    } 
+    }
     createChat({ productId: data?.product.id, sellerId: data?.product.userId });
   };
   useEffect(() => {
@@ -102,6 +103,9 @@ const ItemDetail: NextPage = () => {
       router.push(`/`);
     }
   }, [deleteData]);
+  useEffect(() => {
+    mutate();
+  }, [data?.product]);
 
   return (
     <Layout canGoBack>
@@ -145,7 +149,13 @@ const ItemDetail: NextPage = () => {
               </h1>
               {user && data?.product.userId === user.id ? (
                 <div className="flex space-x-2 justify-between w-14 mr-3 text-sm text-gray-500 whitespace-nowrap">
-                  <button onClick={() => {}}>수정</button>
+                  <button
+                    onClick={() => {
+                      router.push(`/products/${data.product.id}/edit`);
+                    }}
+                  >
+                    수정
+                  </button>
                   <button onClick={onDeleteClick}>삭제</button>
                 </div>
               ) : null}
