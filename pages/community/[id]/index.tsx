@@ -8,7 +8,7 @@ import Link from "next/link";
 import useMutation from "@libs/client/useMutation";
 import { cls } from "@libs/client/utils";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useUser from "@libs/client/useUser";
 import swal from "sweetalert";
 
@@ -33,6 +33,7 @@ export interface CommunityPostResponse {
 
 interface AnswerForm {
   answer: string;
+  id: number;
 }
 
 interface AnswerResponse {
@@ -48,6 +49,12 @@ const CommunityPostDetail: NextPage = () => {
   const router = useRouter();
   const { user } = useUser();
   const { register, handleSubmit, reset } = useForm<AnswerForm>();
+  const {
+    register: answerEditRegister,
+    handleSubmit: answerEditHandleSubmit,
+    setValue,
+  } = useForm<AnswerForm>();
+  const [editState, setEditState] = useState([false]); // 댓글 수정창 상태
   const { data, mutate } = useSWR<CommunityPostResponse>(
     router.query.id ? `/api/posts/${router.query.id}` : null
   );
@@ -60,6 +67,15 @@ const CommunityPostDetail: NextPage = () => {
       `/api/posts/${router.query.id}/answers`,
       "POST"
     );
+  const [editAnswer, { data: editAnswerData, loading: editAnswerLoading }] =
+    useMutation<AnswerResponse>(`/api/posts/${router.query.id}/answers`, "PUT");
+  const [
+    deleteAnswer,
+    { data: deleteAnswerData, loading: deleteAnswerLoading },
+  ] = useMutation<AnswerResponse>(
+    `/api/posts/${router.query.id}/answers`,
+    "DELETE"
+  );
   const [deletePost, { data: deleteData, loading: deleteLoading }] =
     useMutation<DeletePostResponse>(`/api/posts/${router.query.id}`, "DELETE");
   const onDeleteClick = () => {
@@ -105,6 +121,11 @@ const CommunityPostDetail: NextPage = () => {
     if (answerLoading) return;
     sendAnswer(form);
   };
+  const onValidEditAnswer = (form: AnswerForm) => {
+    // 댓글 수정할 경우
+    if (editAnswerLoading) return;
+    editAnswer(form);
+  };
   useEffect(() => {
     if (answerData && answerData.ok) {
       reset(); // input에 적혀있는 값들 초기화
@@ -116,6 +137,16 @@ const CommunityPostDetail: NextPage = () => {
       router.back();
     }
   }, [deleteData]);
+  useEffect(() => {
+    // 댓글 수정 시 댓글 재검증
+    if (editAnswerData?.ok) {
+      setEditState([false]);
+      mutate();
+    }
+    if (deleteAnswerData?.ok) {
+      mutate();
+    }
+  }, [editAnswerData, deleteAnswerData]);
 
   return (
     <Layout canGoBack>
@@ -126,7 +157,13 @@ const CommunityPostDetail: NextPage = () => {
           </span>
           {user?.id && data?.post.userId === user?.id ? (
             <div className="flex justify-between w-14 mr-3 text-xs text-gray-500">
-              <button onClick={() => {router.push(`/community/${router.query.id}/edit`)}}>수정</button>
+              <button
+                onClick={() => {
+                  router.push(`/community/${router.query.id}/edit`);
+                }}
+              >
+                수정
+              </button>
               <button onClick={onDeleteClick}>삭제</button>
             </div>
           ) : null}
@@ -201,34 +238,76 @@ const CommunityPostDetail: NextPage = () => {
           </div>
         </div>
         <div className="px-4 my-5 space-y-5">
-          {data?.post?.answers.map((answer) => (
-            <div key={answer.id} className="flex items-start space-x-3">
-              {answer.user.avatar ? (
-                <img
-                  src={answer.user.avatar}
-                  className="w-8 h-8 rounded-full bg-slate-500"
-                />
-              ) : (
-                <div className="w-8 h-8 bg-slate-200 rounded-full" />
-              )}
-              <div>
-                <span className="text-sm block font-medium text-gray-700">
-                  {answer.user.name}
-                </span>
-                <span className="text-xs text-gray-500 block ">
-                  {String(answer.createdAt).split("T")[0]}
-                  <span className="ml-1">
-                    {String(answer.createdAt).split("T")[1].split(".")[0]}
+          {data?.post?.answers.map((answer, i) => (
+            <div key={answer.id}>
+              <div className="relative flex items-start space-x-3">
+                {answer.user.avatar ? (
+                  <img
+                    src={answer.user.avatar}
+                    className="w-8 h-8 rounded-full bg-slate-500"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-slate-200 rounded-full" />
+                )}
+                <div>
+                  <span className="text-sm block font-medium text-gray-700">
+                    {answer.user.name}
                   </span>
-                </span>
-                <p className="text-gray-700 mt-2">{answer.answer} </p>
-              </div>
-              {user?.id && data?.post.userId === user?.id ? (
-                <div className="flex justify-between w-14 mr-3 text-xs text-gray-500">
-                  <button onClick={() => {}}>수정</button>
-                  <button onClick={() => {}}>삭제</button>
+                  <span className="text-xs text-gray-500 block whitespace-nowrap">
+                    {String(answer.createdAt).split("T")[0]}
+                    <span className="ml-1">
+                      {String(answer.createdAt).split("T")[1].split(".")[0]}
+                    </span>
+                  </span>
+                  {editState[i] ? null : (
+                    <p className="text-gray-700 mt-2">{answer.answer}</p>
+                  )}
                 </div>
-              ) : null}
+                {user?.id && answer.user.id === user?.id ? (
+                  <div className="flex justify-end space-x-2 w-full text-xs text-gray-500">
+                    <button
+                      onClick={() => {
+                        let nEditState = [...editState];
+                        if (!nEditState[i]) nEditState[i] = true;
+                        else nEditState[i] = false;
+                        setEditState(nEditState);
+                        setValue("answer", answer.answer);
+                      }}
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (deleteAnswerLoading) return;
+                        deleteAnswer({ id: answer.id });
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+              <div>
+                {editState[i] ? (
+                  <form onSubmit={answerEditHandleSubmit(onValidEditAnswer)}>
+                    <TextArea
+                      name="description"
+                      required
+                      register={answerEditRegister("answer", {
+                        required: true,
+                        minLength: 1,
+                      })}
+                    />
+                    <input
+                      {...answerEditRegister("id", { value: answer.id })}
+                      type="hidden"
+                    />
+                    <button className="mt-2 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none ">
+                      {answerLoading ? "Loading..." : "Reply"}
+                    </button>
+                  </form>
+                ) : null}
+              </div>
             </div>
           ))}
         </div>
@@ -237,7 +316,7 @@ const CommunityPostDetail: NextPage = () => {
             name="description"
             placeholder="Answer this question!"
             required
-            register={register("answer", { required: true, minLength: 5 })}
+            register={register("answer", { required: true, minLength: 1 })}
           />
           <button className="mt-2 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none ">
             {answerLoading ? "Loading..." : "Reply"}

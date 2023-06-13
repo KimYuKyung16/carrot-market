@@ -1,3 +1,4 @@
+import { cls } from "@libs/client/utils";
 import { UseFormRegisterReturn } from "react-hook-form";
 
 interface TextAreaProps {
@@ -26,7 +27,9 @@ export default function TextArea({
       <textarea
         id={name}
         {...register}
-        className="mt-1 shadow-sm w-full focus:ring-orange-500 rounded-md border-gray-300 focus:border-orange-500 "
+        className={
+          "w-full px-3 py-2 mt-1 shadow-sm  border focus:ring-orange-500 rounded-md border-gray-300 focus:border focus:border-orange-500 focus:outline-none"
+        }
         rows={4}
         {...rest}
       />

@@ -58,7 +58,7 @@ export default function Item({
               </span>
             ) : null}
           </div>
-          <span className="font-medium mt-1 text-gray-900">${price}</span>
+          <span className="font-medium mt-1 text-gray-900">₩ {price}</span>
         </div>
       </div>
       {hearts !== undefined || comments !== undefined ? (

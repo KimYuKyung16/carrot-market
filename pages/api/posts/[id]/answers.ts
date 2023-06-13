@@ -10,35 +10,65 @@ async function handler(
   const {
     query: { id },
     session: { user },
-    body: { answer },
   } = req;
+  if (req.method === "POST") {
+    const {
+      body: { answer },
+    } = req;
 
-  const newAnswer = await client.answer.create({
-    data: {
-      user: {
-        connect: {
-          id: user?.id,
+    const Answer = await client.answer.create({
+      data: {
+        user: {
+          connect: {
+            id: user?.id,
+          },
         },
-      },
-      post: {
-        connect: {
-          id: +(id as string | string[]).toString(),
+        post: {
+          connect: {
+            id: +(id as string | string[]).toString(),
+          },
         },
+        answer,
       },
-      answer,
-    },
-  });
-
-  console.log(newAnswer)
-
-  res.json({
-    ok: true,
-    answer: newAnswer,
-  });
+    });
+    res.json({
+      ok: true,
+      answer: Answer,
+    });
+  }
+  if (req.method === "PUT") {
+    const {
+      body: { id, answer },
+    } = req;
+    const updateAnswer = await client.answer.update({
+      where: {
+        id,
+      },
+      data: {
+        answer,
+      },
+    });
+    res.json({
+      ok: true,
+    });
+  }
+  if (req.method === "DELETE") {
+    const {
+      body: { id },
+    } = req;
+    const deleteAnswer = await client.answer.delete({
+      where: {
+        id,
+      },
+    });
+    res.json({
+      ok: true,
+    });
+  }
 }
 export default withApiSession(
   withHandler({
-    methods: ["POST"],
+    methods: ["POST", "PUT", "DELETE"],
     handler,
   })
 );
