@@ -8,27 +8,27 @@ async function handler(
   res: NextApiResponse<ResponseType>
 ) {
   const {
-    session: { user },
+    query: { id },
   } = req;
-  const sales = await client.product.findMany({
+  const reviews = await client.review.findMany({
     where: {
-      userId: user?.id,
+      createdForId: +(id as string | string[]).toString(),
     },
     include: {
-      _count: {
+      createdBy: {
         select: {
-          favs: true,
-          Chat: true,
+          id: true,
+          name: true,
+          avatar: true,
         },
       },
     },
   });
   res.json({
     ok: true,
-    sales,
+    reviews,
   });
 }
-
 export default withApiSession(
   withHandler({
     methods: ["GET"],

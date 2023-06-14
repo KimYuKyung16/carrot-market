@@ -5,13 +5,14 @@ import { io } from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import useMutation from "@libs/client/useMutation";
-import { Chat, ChatMessage, Product, User } from "@prisma/client";
+import { Chat, ChatMessage, Product, User, Review } from "@prisma/client";
 import useUser from "@libs/client/useUser";
 import useSWR from "swr";
 import { getDateTime } from "@libs/client/getDateTime";
 import NotificationMessage from "@components/notificationMessage";
 import { cls } from "@libs/client/utils";
 import swal from "sweetalert";
+import { useForm } from "react-hook-form";
 
 interface ProductInfo {
   product: Product;
@@ -20,6 +21,11 @@ interface ProductInfo {
 interface MessageResponse {
   ok: boolean;
   post: ChatMessage;
+}
+
+interface ReviewResponse {
+  ok: boolean;
+  review: Review;
 }
 
 interface MessageListWithUser extends ChatMessage {
@@ -37,9 +43,14 @@ export interface MessageListResponse {
   productName: ChatWithProduct;
 }
 
+interface ReviewForm {
+  review: string;
+}
+
 const socket = io("http://localhost:5000");
 const ChatDetail: NextPage = () => {
   const router = useRouter();
+  const { register, handleSubmit } = useForm<ReviewForm>();
   const scrollRef = useRef<HTMLDivElement>(null);
   const sendRef = useRef<HTMLInputElement>(null);
   const { user, isLoading } = useUser();
@@ -47,7 +58,9 @@ const ChatDetail: NextPage = () => {
     `/api/chats/${router.query.id}/message`,
     "POST"
   );
-  const { data: messageList } = useSWR<MessageListResponse>( // 기존에 있던 메시지 리스트
+  const [saveReview, { loading: reviewLoading, data }] =
+    useMutation<ReviewResponse>(`/api/chats/${router.query.id}/review`, "POST");
+  const { data: messageList, mutate } = useSWR<MessageListResponse>( // 기존에 있던 메시지 리스트
     router.query.id ? `/api/chats/${router.query.id}/message` : null
   );
   const { data: productData } = useSWR<ProductInfo>(
@@ -55,19 +68,23 @@ const ChatDetail: NextPage = () => {
       ? `/api/products/${messageList?.productName.product.id}`
       : null
   );
-  const [modal, setModal] = useState(true);
-  const [existMessage, setExistMessage] = useState<any[]>([]);
-  const [sendMessage, setSendMessage] = useState("");
+  const [modal, setModal] = useState(true); // 거래 완료 모달창 상태
+  const [reviewState, setReviewState] = useState("false"); // 리뷰창 상태
+  const [reviewScore, setReviewScore] = useState(1); // 리뷰 점수
+  const [existMessage, setExistMessage] = useState<any[]>([]); // 현재까지의 메세지 전체
+  const [sendMessage, setSendMessage] = useState(""); // 보낼 메세지 내용
 
-  const onChangeTest = (e: any) => {
+  const onValid = (data: { review: string }) => {
+    if (loading) return;
+    saveReview({
+      review: data.review,
+      createForId: productData?.product.userId,
+      reviewScore,
+    });
+  };
+  const onChangeSend = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSendMessage(e.target.value);
   };
-  useEffect(() => {
-    if (!messageList?.chatMessages || messageList?.chatMessages.length === 0)
-      return;
-    setExistMessage([...messageList?.chatMessages]);
-  }, [messageList]);
-
   const onClickTransactionBtn = (): void => {
     if (loading) return;
     if (!productData?.product || productData?.product.state) {
@@ -105,7 +122,6 @@ const ChatDetail: NextPage = () => {
       }
     });
   };
-
   const onClickSendBtn = async () => {
     if ((!router.query.id && !user) || loading) {
       swal("메시지 전송에 실패했습니다.");
@@ -139,19 +155,25 @@ const ChatDetail: NextPage = () => {
         },
       ]);
     });
-
     socket.on("delete Message", (msg: any) => {
       setExistMessage(msg);
+    });
+    socket.on("review", (msg: any) => {
+      if (user?.id === msg) {
+        localStorage.setItem("reviewState", "true");
+        setReviewState("true");
+      }
     });
 
     return () => {
       socket.off("send Message");
       socket.off("delete Message");
+      socket.off("review");
       socket.emit("leaveRoom", String(router.query.id));
+      localStorage.removeItem("reviewState");
     };
   }, [user]);
   useEffect(() => {
-    // socket room 떠나기
     socket.emit("setRoomNum", router.query.id);
   }, [router]);
   useEffect(() => {
@@ -159,12 +181,96 @@ const ChatDetail: NextPage = () => {
     if (!scrollRef.current) return;
     const { scrollHeight } = scrollRef.current;
     window.scrollTo(0, scrollHeight); // 바로 이동
-    // window.scrollTo({top: scrollHeight, behavior: 'smooth'}) // 부드럽게 이동
   }, [existMessage]);
+  useEffect(() => {
+    if (data?.ok) {
+      localStorage.setItem("reviewState", "false");
+      setReviewState("false");
+    }
+  }, [data]);
+  useEffect(() => {
+    if (!messageList?.chatMessages || messageList?.chatMessages.length === 0)
+      return;
+    setExistMessage([...messageList?.chatMessages]);
+    mutate();
+  }, [messageList]);
+  useEffect(() => {
+    let state = localStorage.getItem("reviewState");
+    if (!state) return;
+    setReviewState(state as string);
+  });
+
+  const preventClose = (e: BeforeUnloadEvent) => {
+    localStorage.setItem("reviewState", "false");
+  };
+  useEffect(() => {
+    (() => {
+      window.addEventListener("beforeunload", preventClose);
+    })();
+
+    return () => {
+      window.removeEventListener("beforeunload", preventClose);
+    };
+  }, []);
 
   return (
     <>
-      {messageList?.productName.product.state ? (
+      {reviewState === "true" ? (
+        <div
+          className={cls(
+            "flex flex-col justify-center items-center fixed left-0 top-0 z-10 h-screen w-full bg-black/[0.7]",
+            reviewState === "true" ? "" : "hidden"
+          )}
+        >
+          <form
+            onSubmit={handleSubmit(onValid)}
+            className="bg-orange-500 w-10/12 max-w-xl h-full max-h-[500px] p-5"
+          >
+            <h1 className="text-gray-200 font-bold text-center text-xl pb-3">
+              거래 후기를 남겨주세요
+            </h1>
+            <div className="flex h-1/6">
+              {[1, 2, 3, 4, 5].map((star, i) => (
+                <svg
+                  key={star}
+                  className={cls(
+                    "h-full w-16",
+                    reviewScore >= star ? "text-yellow-400" : "text-gray-400"
+                  )}
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  stroke="#000000"
+                  onClick={() => {
+                    setReviewScore(i + 1);
+                  }}
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              ))}
+            </div>
+            <textarea
+              placeholder="후기 작성"
+              className="w-full h-1/2 resize-none outline-none px-3 py-2"
+              {...register("review", { required: true, minLength: 1 })}
+            />
+            <button className="w-full bg-orange-300 hover:bg-orange-400 text-white px-4 py-3 text-base border border-transparent rounded-md shadow-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none mb-2">
+              등록
+            </button>
+            <button
+              className="w-full bg-gray-400 hover:bg-gray-500 text-white px-4 py-3 text-base border border-transparent rounded-md shadow-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none"
+              onClick={() => {
+                localStorage.setItem("reviewState", "false");
+                setReviewState("false");
+              }}
+            >
+              취소
+            </button>
+          </form>
+        </div>
+      ) : null}
+      {messageList?.productName.product.state && reviewState === "false" ? (
         <div
           onClick={() => {
             setModal(false);
@@ -225,7 +331,7 @@ const ChatDetail: NextPage = () => {
             <div className="flex relative max-w-lg items-center h-9 w-full mx-auto border border-gray-300 rounded-md">
               <input
                 ref={sendRef}
-                onChange={onChangeTest}
+                onChange={onChangeSend}
                 type="text"
                 className="h-full px-2 shadow-sm rounded-full w-full border-gray-300 focus:ring-orange-500 focus:outline-none pr-12 focus:border-orange-500"
               />

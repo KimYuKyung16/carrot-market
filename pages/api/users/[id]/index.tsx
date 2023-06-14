@@ -8,24 +8,16 @@ async function handler(
   res: NextApiResponse<ResponseType>
 ) {
   const {
-    session: { user },
+    query: { id },
   } = req;
-  const sales = await client.product.findMany({
+  const user = await client.user.findUnique({
     where: {
-      userId: user?.id,
-    },
-    include: {
-      _count: {
-        select: {
-          favs: true,
-          Chat: true,
-        },
-      },
+      id: +(id as string | string[]).toString(),
     },
   });
   res.json({
     ok: true,
-    sales,
+    user,
   });
 }
 

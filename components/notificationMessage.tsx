@@ -1,7 +1,7 @@
 import useMutation from "@libs/client/useMutation";
 import useUser from "@libs/client/useUser";
 import { cls } from "@libs/client/utils";
-import { Chat, ChatMessage, Message, Product, User } from "@prisma/client";
+import { ChatMessage, Message, Product, User } from "@prisma/client";
 import { io } from "socket.io-client";
 import useSWR from "swr";
 import swal from "sweetalert";
@@ -18,10 +18,10 @@ interface message extends Message {
 
 interface NotificationMessageProps {
   message: string;
-  reversed?: boolean;
   avatarUrl?: string | null;
   date: string;
   name: string;
+  reversed?: boolean;
   senderId: number;
   productId?: string;
   existMessage: message[];
@@ -55,7 +55,7 @@ export default function NotificationMessage({
   const { data: messageList, mutate } = useSWR<MessageListResponse>( // 기존에 있던 메시지 리스트
     chatId ? `/api/chats/${chatId}/message` : null
   );
-  const [saveMessage, { loading }] = useMutation<MessageResponse>(
+  const [saveMessage, { loading }] = useMutation<MessageResponse>( // 채팅 저장
     `/api/chats/${chatId}/message`,
     "POST"
   );
@@ -66,10 +66,10 @@ export default function NotificationMessage({
     );
   const [savePurchase, { loading: purchaseLoading }] =
     useMutation<MessageResponse>(`/api/chats/${chatId}/purchases`, "POST");
-  const { data: productData } = useSWR<ProductInfo>(
+  const { data: productData } = useSWR<ProductInfo>( // 제품 정보
     productId ? `/api/products/${productId}` : null
   );
-  const [deleteMessage, { loading: deleteLoading }] =
+  const [deleteMessage, { loading: deleteLoading }] = // 채팅 삭제
     useMutation<ProductResponse>(
       chatId ? `/api/chats/${chatId}/message` : "",
       "DELETE"
@@ -110,8 +110,8 @@ export default function NotificationMessage({
     }
   };
   const onClickCancel = () => {
-    if (loading || updateLoading || isLoading || deleteLoading) return;
-    if (!chatId) return;
+    if (loading || updateLoading || isLoading || deleteLoading || !chatId)
+      return;
     if (!productData?.product || productData?.product.state) {
       // 거래가 끝난 물품일 경우
       if (!productData?.product) return;

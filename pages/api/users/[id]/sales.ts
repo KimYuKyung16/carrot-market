@@ -8,11 +8,11 @@ async function handler(
   res: NextApiResponse<ResponseType>
 ) {
   const {
-    session: { user },
+    query: { id },
   } = req;
   const sales = await client.product.findMany({
     where: {
-      userId: user?.id,
+      userId: +(id as string | string[]).toString(),
     },
     include: {
       _count: {
