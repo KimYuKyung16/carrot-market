@@ -327,7 +327,7 @@ const ChatDetail: NextPage = () => {
               })
             : null}
 
-          <form className="fixed py-2 bottom-0 inset-x-0">
+          <form className="fixed py-2 bottom-0 inset-x-0 pb-5">
             <div className="flex relative max-w-lg items-center h-9 w-full mx-auto border border-gray-300 rounded-md">
               <input
                 ref={sendRef}

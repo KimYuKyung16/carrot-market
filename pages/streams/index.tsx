@@ -4,6 +4,7 @@ import FloatingButton from "@components/floating-button";
 import Layout from "@components/layout";
 import { Stream } from "@prisma/client";
 import useSWR from "swr";
+import Image from "next/image";
 
 interface StreamsResponse {
   ok: boolean;
@@ -12,13 +13,21 @@ interface StreamsResponse {
 
 const Streams: NextPage = () => {
   const { data } = useSWR<StreamsResponse>(`/api/streams`); // 주소가 SWR의 key 역할을 한다.
+
   return (
     <Layout hasTabBar title="라이브">
       <div className=" divide-y-[1px] space-y-4">
         {data?.streams.map((stream) => (
           <Link key={stream.id} href={`/streams/${stream.id}`}>
             <a className="pt-4 block  px-4">
-              <div className="w-full rounded-md shadow-sm bg-slate-300 aspect-video" />
+              <div className="w-full aspect-video bg-black overflow-hidden">
+                <iframe
+                  src={`https://customer-qkzviq88w8n4p4hm.cloudflarestream.com/dc6c070b1d4bdfb8c16569cbb1d87db0/thumbnails/thumbnail.jpg?height=305`}
+                  className="w-full h-full rounded-md shadow-sm border-none "
+                  allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                  allowFullScreen={true}
+                ></iframe>
+              </div>
               <h1 className="text-2xl mt-2 font-bold text-gray-900">
                 {stream.name}
               </h1>
