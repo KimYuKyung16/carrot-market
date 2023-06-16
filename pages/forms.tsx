@@ -6,7 +6,7 @@ interface LoginForm {
   email: string;
 }
 
-export default function forms() {
+export default function Forms() {
   // register: input을 state와 연결시켜 주는 역할
   // watch: form을 보게 해주는 함수
   // handleSubmit: e.PreventDefault 같은 것을 하는 함수
