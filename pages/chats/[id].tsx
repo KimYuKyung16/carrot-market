@@ -13,6 +13,7 @@ import NotificationMessage from "@components/notificationMessage";
 import { cls } from "@libs/client/utils";
 import swal from "sweetalert";
 import { useForm } from "react-hook-form";
+import { Socket } from "net";
 
 interface ProductInfo {
   product: Product;
@@ -47,7 +48,8 @@ interface ReviewForm {
   review: string;
 }
 
-const socket = io("http://localhost:5000");
+// const socket = io("/api/chats/socketio");
+let socket: any;
 const ChatDetail: NextPage = () => {
   const router = useRouter();
   const { register, handleSubmit } = useForm<ReviewForm>();
@@ -73,6 +75,56 @@ const ChatDetail: NextPage = () => {
   const [reviewScore, setReviewScore] = useState(1); // 리뷰 점수
   const [existMessage, setExistMessage] = useState<any[]>([]); // 현재까지의 메세지 전체
   const [sendMessage, setSendMessage] = useState(""); // 보낼 메세지 내용
+
+
+
+
+ // 테스트 코드
+ useEffect(() => {
+  console.log("흠")
+  async function socketInitializer() {
+    await fetch("/api/chats/socketio");
+    socket = io({transports: ['websocket']});
+    
+    socket.on("send Message", (msg: any) => {
+      setExistMessage((prev) => [
+        ...prev,
+        {
+          User: { avatar: msg.avatar, name: msg.name },
+          createdAt: msg.createdAt,
+          message: msg.message,
+          userId: msg.userId,
+          notification: msg.notification,
+        },
+      ]);
+    });
+    socket.on("delete Message", (msg: any) => {
+      setExistMessage(msg);
+    });
+    socket.on("review", (msg: any) => {
+      if (user?.id === msg) {
+        localStorage.setItem("reviewState", "true");
+        setReviewState("true");
+      }
+    });
+    socket.emit("setRoomNum", router.query.id);
+
+    return () => {
+      socket.disconnect();
+      socket.off("send Message");
+      socket.off("delete Message");
+      socket.off("review");
+      socket.off("review");
+      socket.emit("leaveRoom", String(router.query.id));
+      localStorage.removeItem("reviewState");
+    };
+  }
+  socketInitializer();
+}, [user]);
+
+
+
+  // 테스트 코드
 
   const onValid = (data: { review: string }) => {
     if (loading) return;
@@ -142,40 +194,40 @@ const ChatDetail: NextPage = () => {
     });
   };
 
-  useEffect(() => {
-    socket.on("send Message", (msg: any) => {
-      setExistMessage((prev) => [
-        ...prev,
-        {
-          User: { avatar: msg.avatar, name: msg.name },
-          createdAt: msg.createdAt,
-          message: msg.message,
-          userId: msg.userId,
-          notification: msg.notification,
-        },
-      ]);
-    });
-    socket.on("delete Message", (msg: any) => {
-      setExistMessage(msg);
-    });
-    socket.on("review", (msg: any) => {
-      if (user?.id === msg) {
-        localStorage.setItem("reviewState", "true");
-        setReviewState("true");
-      }
-    });
+  // useEffect(() => {
+  //   socket.on("send Message", (msg: any) => {
+  //     setExistMessage((prev) => [
+  //       ...prev,
+  //       {
+  //         User: { avatar: msg.avatar, name: msg.name },
+  //         createdAt: msg.createdAt,
+  //         message: msg.message,
+  //         userId: msg.userId,
+  //         notification: msg.notification,
+  //       },
+  //     ]);
+  //   });
+  //   socket.on("delete Message", (msg: any) => {
+  //     setExistMessage(msg);
+  //   });
+  //   socket.on("review", (msg: any) => {
+  //     if (user?.id === msg) {
+  //       localStorage.setItem("reviewState", "true");
+  //       setReviewState("true");
+  //     }
+  //   });
 
-    return () => {
-      socket.off("send Message");
-      socket.off("delete Message");
-      socket.off("review");
-      socket.emit("leaveRoom", String(router.query.id));
-      localStorage.removeItem("reviewState");
-    };
-  }, [user]);
-  useEffect(() => {
-    socket.emit("setRoomNum", router.query.id);
-  }, [router]);
+  //   return () => {
+  //     socket.off("send Message");
+  //     socket.off("delete Message");
+  //     socket.off("review");
+  //     socket.emit("leaveRoom", String(router.query.id));
+  //     localStorage.removeItem("reviewState");
+  //   };
+  // }, [socket]);
+  // useEffect(() => {
+  //   socket.emit("setRoomNum", router.query.id);
+  // }, [router]);
   useEffect(() => {
     // 스크롤 제일 아래로
     if (!scrollRef.current) return;

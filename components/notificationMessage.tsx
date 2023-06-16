@@ -38,7 +38,7 @@ interface ProductResponse {
   ok: boolean;
 }
 
-const socket = io("http://localhost:5000");
+// const socket = io("https://carrot-market-d79a2557daa7.herokuapp.com", {transports: ['websocket'] });
 export default function NotificationMessage({
   message,
   avatarUrl,
@@ -87,17 +87,17 @@ export default function NotificationMessage({
       swal("본인이 거래를 완료할 수 없습니다", "", "warning");
       return;
     }
-    socket.emit("message", {
-      roomNum: chatId,
-      message: {
-        avatar: user?.avatar,
-        name: user?.name,
-        userId: user?.id,
-        createdAt: new Date(),
-        message: notificationMessage,
-        notification: true,
-      },
-    });
+    // socket.emit("message", {
+    //   roomNum: chatId,
+    //   message: {
+    //     avatar: user?.avatar,
+    //     name: user?.name,
+    //     userId: user?.id,
+    //     createdAt: new Date(),
+    //     message: notificationMessage,
+    //     notification: true,
+    //   },
+    // });
     saveMessage({
       chatId: chatId,
       message: notificationMessage,
@@ -124,10 +124,10 @@ export default function NotificationMessage({
 
     let nexistMessage = [...existMessage];
     nexistMessage.splice(existMessageIndex, 1);
-    socket.emit("deleteMessage", {
-      roomNum: chatId,
-      message: nexistMessage,
-    });
+    // socket.emit("deleteMessage", {
+    //   roomNum: chatId,
+    //   message: nexistMessage,
+    // });
   };
 
   useEffect(() => {
