@@ -38,7 +38,7 @@ interface ProductResponse {
   ok: boolean;
 }
 
-const socket = io("http://localhost:5000");
+const socket = io("ec2-13-125-237-101.ap-northeast-2.compute.amazonaws.com");
 export default function NotificationMessage({
   message,
   avatarUrl,
