@@ -38,7 +38,7 @@ interface ProductResponse {
   ok: boolean;
 }
 
-const socket = io("ec2-13-125-237-101.ap-northeast-2.compute.amazonaws.com:443");
+const socket = io("3.39.209.74:5000");
 export default function NotificationMessage({
   message,
   avatarUrl,
