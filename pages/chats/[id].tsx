@@ -47,7 +47,7 @@ interface ReviewForm {
   review: string;
 }
 
-const socket = io("ec2-13-125-237-101.ap-northeast-2.compute.amazonaws.com:443", { transports: ['websocket'] });
+const socket = io("ec2-13-125-237-101.ap-northeast-2.compute.amazonaws.com:443");
 const ChatDetail: NextPage = () => {
   const router = useRouter();
   const { register, handleSubmit } = useForm<ReviewForm>();
