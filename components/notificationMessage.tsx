@@ -38,7 +38,7 @@ interface ProductResponse {
   ok: boolean;
 }
 
-const socket = io("kcarrotmarket.store:5000");
+const socket = io("kcarrotmarket.store");
 export default function NotificationMessage({
   message,
   avatarUrl,
