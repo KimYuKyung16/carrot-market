@@ -47,7 +47,7 @@ interface ReviewForm {
   review: string;
 }
 
-const socket = io("https://kcarrotmarket.store",{transports: ['websocket']});
+const socket = io("https://kcarrotmarket.store", {transports: ['websocket']});
 const ChatDetail: NextPage = () => {
   const router = useRouter();
   const { register, handleSubmit } = useForm<ReviewForm>();

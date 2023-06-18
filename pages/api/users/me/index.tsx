@@ -16,13 +16,7 @@ type NextApiRequestWithImage = NextApiRequest &
 
 type NextApiResponseWithImage = NextApiResponse & Response;
 
-let s3 = new S3Client({
-  region: process.env.REGION,
-  credentials: {
-    accessKeyId: process.env.ACCESS_KEY as string,
-    secretAccessKey: process.env.SECRET_ACCESS_KEY as string,
-  },
-});
+let s3 = new S3Client({});
 
 const upload = multer({
   storage: multerS3({
@@ -46,7 +40,7 @@ async function handler(
       where: { id: req.session.user?.id },
     });
     res.json({
-      ok: true,
+      ok: true, 
       profile,
     });
   }
