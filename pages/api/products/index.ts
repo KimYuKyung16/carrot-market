@@ -16,10 +16,10 @@ type NextApiRequestWithImage = NextApiRequest &
 type NextApiResponseWithImage = NextApiResponse & Response;
 
 let s3 = new S3Client({
-  region: process.env.REGION,
+  region: process.env.AWS_REGION,
   credentials: {
-    accessKeyId: process.env.ACCESS_KEY as string,
-    secretAccessKey: process.env.SECRET_ACCESS_KEY as string,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
   },
 });
 
