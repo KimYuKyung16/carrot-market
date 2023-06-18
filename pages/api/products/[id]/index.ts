@@ -15,13 +15,7 @@ type NextApiRequestWithImage = NextApiRequest &
 
 type NextApiResponseWithImage = NextApiResponse & Response;
 
-let s3 = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-  },
-});
+let s3 = new S3Client({});
 
 const upload = multer({
   storage: multerS3({
