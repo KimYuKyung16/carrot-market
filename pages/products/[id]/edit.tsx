@@ -10,6 +10,7 @@ import { useRouter } from "next/router";
 import useImageMutation from "@libs/client/useImageMutaion";
 import { ItemDetailResponse } from ".";
 import useSWR from "swr";
+import { S3 } from "aws-sdk";
 
 interface UploadProductForm {
   image: FileList;
@@ -18,18 +19,26 @@ interface UploadProductForm {
   description: string;
 }
 
-interface UploadProductMutation {
+interface UploadProduct {
   ok: boolean;
-  product: Product;
+  product: S3.PresignedPost;
 }
 
 const Edit: NextPage = () => {
   const router = useRouter();
-  const { data: productData } = useSWR<ItemDetailResponse>(
-    router.query.id ? `/api/products/${router.query.id}` : null
-  );
   const { register, setValue, handleSubmit, watch } =
     useForm<UploadProductForm>();
+  const productImage = watch("image");
+  const { data: uploadUrl } = useSWR<UploadProduct>(
+    router.query.id && productImage && productImage[0]
+      ? `/api/upload-url?file=${productImage[0].name}&fileType=${productImage[0].type}`
+      : null
+  );
+  const { data: productData } = useSWR<ItemDetailResponse>(
+    router.query.id
+      ? `/api/products/${router.query.id}`
+      : null
+  );
   useEffect(() => {
     if (productData?.product.name) setValue("name", productData.product.name);
     if (productData?.product.price)
@@ -38,28 +47,49 @@ const Edit: NextPage = () => {
       setValue("description", productData.product.description);
   }, [productData, setValue]);
 
-  const [updateProduct, { loading, data }] =
-    useImageMutation<UploadProductMutation>(
-      `/api/products/${router.query.id}`,
-      "PUT"
-    );
-  const productImage = watch("image");
-  const onValid = ({ name, price, description }: UploadProductForm) => {
-    if (loading || !productData) return;
+  // const [updateProduct, { loading, data }] =
+  //   useImageMutation<UploadProductMutation>(
+  //     `/api/products/${router.query.id}`,
+  //     "PUT"
+  //   );
+
+
+
+  const onValid = async ({ name, price, description }: UploadProductForm) => {
+    if (!productData || !uploadUrl || !productImage) return;
+
+    const file = productImage[0];
+    const { url, fields } = uploadUrl.product;
     const fd = new FormData();
-    fd.append("name", name);
-    fd.append("price", String(price));
-    fd.append("description", description);
-    if (productImage && productImage.length > 0) {
-      fd.append("productImage", productImage[0]);
-    }
-    updateProduct(fd);
+    
+    Object.entries({ ...fields, file }).forEach(([key, value]) => {
+      fd.append(key, value as string)
+    })
+
+    
+    // console.log(url, fields);
+
+    // fd.append("name", name);
+    // fd.append("price", String(price));
+    // fd.append("description", description);
+    // if (productImage && productImage.length > 0) {
+    //   fd.append("productImage", productImage[0]);
+    // }
+
+    const upload  = await fetch(url, {
+      method: 'POST',
+      body: fd,
+    })
+
+    console.log(upload)
+
+    // updateProduct(fd);
   };
-  useEffect(() => {
-    if (data?.ok) {
-      router.back();
-    }
-  }, [data, router]);
+  // useEffect(() => {
+  //   if (data?.ok) {
+  //     router.back();
+  //   }
+  // }, [data, router]);
 
   const [productPreview, setProductPreview] = useState("");
   useEffect(() => {
@@ -123,7 +153,7 @@ const Edit: NextPage = () => {
           label="Description"
           required
         />
-        <Button text={loading ? "Loading..." : "Upload item"} />
+        <Button text={true ? "Loading..." : "Upload item"} />
       </form>
     </Layout>
   );
