@@ -70,6 +70,7 @@ async function handler(
     const {
       body: { question },
     } = req;
+    console.log(req.body)
     if (question) {
       await client.post.update({
         where: {

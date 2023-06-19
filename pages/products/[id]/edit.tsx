@@ -5,12 +5,12 @@ import Layout from "@components/layout";
 import TextArea from "@components/textarea";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { Product } from "@prisma/client";
 import { useRouter } from "next/router";
-import useImageMutation from "@libs/client/useImageMutaion";
 import { ItemDetailResponse } from ".";
 import useSWR from "swr";
 import { S3 } from "aws-sdk";
+import useMutation from "@libs/client/useMutation";
+import useUser from "@libs/client/useUser";
 
 interface UploadProductForm {
   image: FileList;
@@ -21,23 +21,27 @@ interface UploadProductForm {
 
 interface UploadProduct {
   ok: boolean;
-  product: S3.PresignedPost;
+  image: S3.PresignedPost;
+  nFilename: string;
+}
+
+interface UploadProductMutation {
+  ok: boolean;
 }
 
 const Edit: NextPage = () => {
   const router = useRouter();
+  const { user } = useUser();
   const { register, setValue, handleSubmit, watch } =
     useForm<UploadProductForm>();
   const productImage = watch("image");
   const { data: uploadUrl } = useSWR<UploadProduct>(
-    router.query.id && productImage && productImage[0]
-      ? `/api/upload-url?file=${productImage[0].name}&fileType=${productImage[0].type}`
+    productImage && productImage[0] && user
+      ? `/api/upload-url?file=${productImage[0].name}&fileType=${productImage[0].type}&userId=${user?.id}&type=product`
       : null
   );
   const { data: productData } = useSWR<ItemDetailResponse>(
-    router.query.id
-      ? `/api/products/${router.query.id}`
-      : null
+    router.query.id ? `/api/products/${router.query.id}` : null
   );
   useEffect(() => {
     if (productData?.product.name) setValue("name", productData.product.name);
@@ -47,49 +51,40 @@ const Edit: NextPage = () => {
       setValue("description", productData.product.description);
   }, [productData, setValue]);
 
-  // const [updateProduct, { loading, data }] =
-  //   useImageMutation<UploadProductMutation>(
-  //     `/api/products/${router.query.id}`,
-  //     "PUT"
-  //   );
-
-
+  const [updateProduct, { loading, data }] = useMutation<UploadProductMutation>(
+    `/api/products/${router.query.id}`,
+    "PUT"
+  );
 
   const onValid = async ({ name, price, description }: UploadProductForm) => {
-    if (!productData || !uploadUrl || !productImage) return;
-
-    const file = productImage[0];
-    const { url, fields } = uploadUrl.product;
-    const fd = new FormData();
-    
-    Object.entries({ ...fields, file }).forEach(([key, value]) => {
-      fd.append(key, value as string)
-    })
-
-    
-    // console.log(url, fields);
-
-    // fd.append("name", name);
-    // fd.append("price", String(price));
-    // fd.append("description", description);
-    // if (productImage && productImage.length > 0) {
-    //   fd.append("productImage", productImage[0]);
-    // }
-
-    const upload  = await fetch(url, {
-      method: 'POST',
-      body: fd,
-    })
-
-    console.log(upload)
-
-    // updateProduct(fd);
+    if (!productData || loading) return;
+    let uploadImage;
+    if (uploadUrl) {
+      const {
+        nFilename,
+        image: { url, fields },
+      } = uploadUrl;
+      const file = productImage[0];
+      const fd = new FormData();
+      Object.entries({ ...fields, file }).forEach(([key, value]) => {
+        fd.append(key, value as string);
+      });
+      uploadImage = await fetch(url, { method: "POST", body: fd });
+      updateProduct({
+        file: uploadImage && uploadImage.ok ? nFilename : null,
+        name,
+        price,
+        description,
+      });
+    } else {
+      updateProduct({ file: null, name, price, description });
+    }
   };
-  // useEffect(() => {
-  //   if (data?.ok) {
-  //     router.back();
-  //   }
-  // }, [data, router]);
+  useEffect(() => {
+    if (data?.ok) {
+      router.back();
+    }
+  }, [data, router]);
 
   const [productPreview, setProductPreview] = useState("");
   useEffect(() => {
@@ -153,7 +148,7 @@ const Edit: NextPage = () => {
           label="Description"
           required
         />
-        <Button text={true ? "Loading..." : "Upload item"} />
+        <Button text={loading ? "Loading..." : "Upload item"} />
       </form>
     </Layout>
   );

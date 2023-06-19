@@ -8,13 +8,21 @@ import useMutation from "@libs/client/useMutation";
 import { useEffect, useState } from "react";
 import { Product } from "@prisma/client";
 import { useRouter } from "next/router";
-import useImageMutation from "@libs/client/useImageMutaion";
+import { S3 } from "aws-sdk";
+import useUser from "@libs/client/useUser";
+import useSWR from "swr";
 
 interface UploadProductForm {
   image: FileList;
   name: string;
   price: number;
   description: string;
+}
+
+interface UploadProduct {
+  ok: boolean;
+  image: S3.PresignedPost;
+  nFilename: string;
 }
 
 interface UploadProductMutation {
@@ -25,22 +33,37 @@ interface UploadProductMutation {
 // handleSubmit(성공했을 경우 함수, 실패했을 경우 함수)
 const Upload: NextPage = () => {
   const router = useRouter();
+  const { user } = useUser();
   const { register, handleSubmit, watch } = useForm<UploadProductForm>();
-  const [uploadProduct, { loading, data }] =
-    useImageMutation<UploadProductMutation>("/api/products", "POST");
   const productImage = watch("image");
-  const onValid = (data: UploadProductForm) => {
-    if (loading) return;
+  const { data: uploadUrl } = useSWR<UploadProduct>(
+    productImage && productImage[0] && user
+      ? `/api/upload-url?file=${productImage[0].name}&fileType=${productImage[0].type}&userId=${user?.id}&type=product`
+      : null
+  );
+  const [uploadProduct, { loading, data }] = useMutation<UploadProductMutation>(
+    "/api/products",
+    "POST"
+  );
+
+  const onValid = async ({ name, price, description }: UploadProductForm) => {
+    if (loading || !uploadUrl) return;
+    const {
+      nFilename,
+      image: { url, fields },
+    } = uploadUrl;
+    const file = productImage[0];
     const fd = new FormData();
-
-    fd.append("name", data.name);
-    fd.append("price", String(data.price));
-    fd.append("description", data.description);
-    if (productImage && productImage.length > 0) {
-      fd.append("productImage", productImage[0]);
-    }
-
-    uploadProduct(fd);
+    Object.entries({ ...fields, file }).forEach(([key, value]) => {
+      fd.append(key, value as string);
+    });
+    const uploadImage = await fetch(url, { method: "POST", body: fd });
+    uploadProduct({
+      file: uploadImage && uploadImage.ok ? nFilename : null,
+      name,
+      price,
+      description,
+    });
   };
   useEffect(() => {
     if (data?.ok) {
