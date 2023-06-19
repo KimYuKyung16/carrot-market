@@ -12,7 +12,7 @@ export default async function handler(
   const { file, fileType } = req.query;
 
   const product = await s3.createPresignedPost({
-    Bucket: "carrot-market",
+    Bucket: process.env.BUCKET_NAME,
     Fields: {
       key: file,
       "Content-Type": fileType,
