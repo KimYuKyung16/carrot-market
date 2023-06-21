@@ -6,6 +6,8 @@ import { cls } from "@libs/client/utils";
 import { useForm } from "react-hook-form";
 import useMutation from "@libs/client/useMutation";
 import { useRouter } from "next/router";
+import emailjs from "@emailjs/browser";
+import swal from "sweetalert";
 
 interface EnterForm {
   email?: string;
@@ -18,16 +20,21 @@ interface TokenForm {
 
 interface MutationResult {
   ok: boolean;
+  token: number;
+  email: string;
 }
 
 const Enter: NextPage = () => {
-  const [enter, { loading, data, error }] =
-    useMutation<MutationResult>("/api/users/enter", 'POST');
+  const [enter, { loading, data, error }] = useMutation<MutationResult>(
+    "/api/users/enter",
+    "POST"
+  );
   const [confirmToken, { loading: tokenLoading, data: tokenData }] =
-    useMutation<MutationResult>("/api/users/confirm", 'POST');
+    useMutation<MutationResult>("/api/users/confirm", "POST");
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, reset } = useForm<EnterForm>();
-  const { register: tokenRegister, handleSubmit: tokenHandleSubmit } = useForm<TokenForm>();
+  const { register: tokenRegister, handleSubmit: tokenHandleSubmit } =
+    useForm<TokenForm>();
   const [method, setMethod] = useState<"email" | "phone">("email");
   const onEmailClick = () => {
     reset();
@@ -38,18 +45,38 @@ const Enter: NextPage = () => {
     setMethod("phone");
   };
 
-  const onValid = (validForm: EnterForm) => {
+  const onValid = async (validForm: EnterForm) => {
     if (loading) return;
     enter(validForm);
   };
 
+  useEffect(() => {
+    if (!data?.email || !data.token) return;
+    let templateParmas = {
+      user_email: data?.email,
+      token: data?.token,
+    };
+    const sendEmail = async () => {
+      let send = await emailjs.send(
+        process.env.EMAILJS_SERVICE_ID as string,
+        process.env.EMAILJS_TEMPLATE_ID as string,
+        templateParmas,
+        process.env.EMAILJS_PUBLIC_KEY as string,
+      );
+      if (send.status === 200) {
+        swal("이메일을 확인해주세요");
+      }
+    };
+    sendEmail();
+  }, [data]);
+
   const onTokenValid = (validForm: TokenForm) => {
     if (tokenLoading) return;
     confirmToken(validForm);
-  }
+  };
   const router = useRouter();
   useEffect(() => {
-    if(tokenData?.ok) {
+    if (tokenData?.ok) {
       router.push("/");
     }
   }, [tokenData, router]);

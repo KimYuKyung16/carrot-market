@@ -2,7 +2,7 @@ import twilio from "twilio";
 import client from "@libs/server/client";
 import withHandler, { ResponseType } from "@libs/server/withHandler";
 import { NextApiRequest, NextApiResponse } from "next";
-
+import emailjs from "@emailjs/browser";
 
 const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOEKN);
 
@@ -34,11 +34,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
     //   body: `Your login token is ${payload}.`,
     // })
     // console.log(message);
-  } else if (email) {
-    // 홈페이지 로그인 오류 먼저 해결하고 추후에 추가
   }
   return res.json({
     ok: true,
+    token: token.payload,
+    email
   })
 }
 
