@@ -6,7 +6,8 @@ import useUser from "@libs/client/useUser";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import useMutation from "@libs/client/useMutation";
-import useImageMutation from "@libs/client/useImageMutaion";
+import { S3 } from "aws-sdk";
+import useSWR from "swr";
 
 interface EditProfiltForm {
   email?: string;
@@ -14,6 +15,12 @@ interface EditProfiltForm {
   name?: string;
   avatar?: FileList;
   formErrors?: string;
+}
+
+interface EditProfile {
+  ok: boolean;
+  image: S3.PresignedPost;
+  nFilename: string;
 }
 
 interface EditProfileResponse {
@@ -31,44 +38,63 @@ const EditProfile: NextPage = () => {
     formState: { errors },
     watch, // watch: 모든 폼의 변경을 감지할 수 있음.
   } = useForm<EditProfiltForm>();
-  let fd = new FormData()
-  useEffect(() => {
-    if (user?.name) setValue("name", user.name);
-    if (user?.email) setValue("email", user.email);
-    if (user?.phone) setValue("phone", user.phone);
-  }, [user, setValue]);
-  const [editProfile, { data, loading }] =
-    useImageMutation<EditProfileResponse>(`/api/users/me`, 'POST');
-    const avatar = watch("avatar");
-    const onValid = ({ email, phone, name, avatar }: EditProfiltForm) => {
-    if (loading) return;
+  const avatar = watch("avatar");
+  const { data: uploadUrl } = useSWR<EditProfile>(
+    avatar && avatar[0] && user
+      ? `/api/upload-url?file=${avatar[0].name}&fileType=${avatar[0].type}&userId=${user?.id}&type=profile`
+      : null
+  );
+  const [editProfile, { data, loading }] = useMutation<EditProfileResponse>(
+    `/api/users/me`,
+    "PUT"
+  );
+
+  const onValid = async ({ email, phone, name, avatar }: EditProfiltForm) => {
+    if (loading || !uploadUrl) return;
     if (email === "" && phone === "" && name === "") {
       return setError("formErrors", {
         message: "이메일 혹은 전화번호가 필요합니다. 하나를 선택하세요",
       });
     }
-
-    fd.append('email', email as string);
-    fd.append('phone', phone as string);
-    fd.append('name', name as string);
-    if (avatar && avatar.length > 0) {
-      fd.append('profileImage', avatar[0]);
+    if (avatar) {
+      const {
+        nFilename,
+        image: { url, fields },
+      } = uploadUrl;
+      const file = avatar[0];
+      const fd = new FormData();
+      Object.entries({ ...fields, file }).forEach(([key, value]) => {
+        fd.append(key, value as string);
+      });
+      const uploadImage = await fetch(url, { method: "POST", body: fd });
+      editProfile({
+        file: uploadImage && uploadImage.ok ? nFilename : null,
+        email,
+        phone,
+        name,
+      });
+    } else {
+      editProfile({ email, phone, name });
     }
-    editProfile(fd)
   };
   useEffect(() => {
     if (data && !data.ok && data.error) {
       setError("formErrors", { message: data.error });
     }
   }, [data, setError]);
-  const [avatarPreview, setAvatarPreview] = useState("");
 
+  const [avatarPreview, setAvatarPreview] = useState("");
   useEffect(() => {
     if (avatar && avatar.length > 0) {
       const file = avatar[0];
       setAvatarPreview(URL.createObjectURL(file));
     }
   }, [avatar]);
+  useEffect(() => {
+    if (user?.name) setValue("name", user.name);
+    if (user?.email) setValue("email", user.email);
+    if (user?.phone) setValue("phone", user.phone);
+  }, [user, setValue]);
 
   return (
     <Layout canGoBack title="Edit Profile">
@@ -79,10 +105,10 @@ const EditProfile: NextPage = () => {
               src={avatarPreview}
               className="w-14 h-14 rounded-full bg-slate-500"
             />
+          ) : user?.avatar ? (
+            <img src={user?.avatar} className="w-14 h-14 rounded-full" />
           ) : (
-            user?.avatar ? 
-              <img src={user?.avatar} className="w-14 h-14 rounded-full"/> :
-              <div className="w-14 h-14 rounded-full bg-slate-500" />
+            <div className="w-14 h-14 rounded-full bg-slate-500" />
           )}
           <label
             htmlFor="picture"

@@ -5,11 +5,12 @@ import Layout from "@components/layout";
 import TextArea from "@components/textarea";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { Product } from "@prisma/client";
 import { useRouter } from "next/router";
-import useImageMutation from "@libs/client/useImageMutaion";
 import { ItemDetailResponse } from ".";
 import useSWR from "swr";
+import { S3 } from "aws-sdk";
+import useMutation from "@libs/client/useMutation";
+import useUser from "@libs/client/useUser";
 
 interface UploadProductForm {
   image: FileList;
@@ -18,18 +19,30 @@ interface UploadProductForm {
   description: string;
 }
 
+interface UploadProduct {
+  ok: boolean;
+  image: S3.PresignedPost;
+  nFilename: string;
+}
+
 interface UploadProductMutation {
   ok: boolean;
-  product: Product;
 }
 
 const Edit: NextPage = () => {
   const router = useRouter();
+  const { user } = useUser();
+  const { register, setValue, handleSubmit, watch } =
+    useForm<UploadProductForm>();
+  const productImage = watch("image");
+  const { data: uploadUrl } = useSWR<UploadProduct>(
+    productImage && productImage[0] && user
+      ? `/api/upload-url?file=${productImage[0].name}&fileType=${productImage[0].type}&userId=${user?.id}&type=product`
+      : null
+  );
   const { data: productData } = useSWR<ItemDetailResponse>(
     router.query.id ? `/api/products/${router.query.id}` : null
   );
-  const { register, setValue, handleSubmit, watch } =
-    useForm<UploadProductForm>();
   useEffect(() => {
     if (productData?.product.name) setValue("name", productData.product.name);
     if (productData?.product.price)
@@ -38,22 +51,34 @@ const Edit: NextPage = () => {
       setValue("description", productData.product.description);
   }, [productData, setValue]);
 
-  const [updateProduct, { loading, data }] =
-    useImageMutation<UploadProductMutation>(
-      `/api/products/${router.query.id}`,
-      "PUT"
-    );
-  const productImage = watch("image");
-  const onValid = ({ name, price, description }: UploadProductForm) => {
-    if (loading || !productData) return;
-    const fd = new FormData();
-    fd.append("name", name);
-    fd.append("price", String(price));
-    fd.append("description", description);
-    if (productImage && productImage.length > 0) {
-      fd.append("productImage", productImage[0]);
+  const [updateProduct, { loading, data }] = useMutation<UploadProductMutation>(
+    `/api/products/${router.query.id}`,
+    "PUT"
+  );
+
+  const onValid = async ({ name, price, description }: UploadProductForm) => {
+    if (!productData || loading) return;
+    let uploadImage;
+    if (uploadUrl) {
+      const {
+        nFilename,
+        image: { url, fields },
+      } = uploadUrl;
+      const file = productImage[0];
+      const fd = new FormData();
+      Object.entries({ ...fields, file }).forEach(([key, value]) => {
+        fd.append(key, value as string);
+      });
+      uploadImage = await fetch(url, { method: "POST", body: fd });
+      updateProduct({
+        file: uploadImage && uploadImage.ok ? nFilename : null,
+        name,
+        price,
+        description,
+      });
+    } else {
+      updateProduct({ file: null, name, price, description });
     }
-    updateProduct(fd);
   };
   useEffect(() => {
     if (data?.ok) {
