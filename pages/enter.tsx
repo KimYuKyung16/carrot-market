@@ -8,6 +8,9 @@ import useMutation from "@libs/client/useMutation";
 import { useRouter } from "next/router";
 import emailjs from "@emailjs/browser";
 import swal from "sweetalert";
+import { User } from "@prisma/client";
+import useUser from "@libs/client/useUser";
+import useSWR from "swr";
 
 interface EnterForm {
   email?: string;
@@ -24,14 +27,20 @@ interface MutationResult {
   email: string;
 }
 
+interface ProfileResponse {
+  ok: boolean;
+  profile: User;
+}
+
 const Enter: NextPage = () => {
+  const router = useRouter();
+  const { data: userData } = useSWR<ProfileResponse>("/api/users/me");
   const [enter, { loading, data, error }] = useMutation<MutationResult>(
     "/api/users/enter",
     "POST"
   );
   const [confirmToken, { loading: tokenLoading, data: tokenData }] =
     useMutation<MutationResult>("/api/users/confirm", "POST");
-  const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, reset } = useForm<EnterForm>();
   const { register: tokenRegister, handleSubmit: tokenHandleSubmit } =
     useForm<TokenForm>();
@@ -61,7 +70,7 @@ const Enter: NextPage = () => {
         process.env.EMAILJS_SERVICE_ID as string,
         process.env.EMAILJS_TEMPLATE_ID as string,
         templateParmas,
-        process.env.EMAILJS_PUBLIC_KEY as string,
+        process.env.EMAILJS_PUBLIC_KEY as string
       );
       if (send.status === 200) {
         swal("이메일을 확인해주세요");
@@ -74,12 +83,18 @@ const Enter: NextPage = () => {
     if (tokenLoading) return;
     confirmToken(validForm);
   };
-  const router = useRouter();
   useEffect(() => {
-    if (tokenData?.ok) {
+    // console.log(tokenData)
+    if (tokenData && tokenData?.ok) {
+      router.replace("/");
+      router.reload();
+    }
+  }, [tokenData]);
+  useEffect(() => {
+    if (userData && userData.profile) {
       router.push("/");
     }
-  }, [tokenData, router]);
+  }, [userData]);
 
   return (
     <div className="mt-16 px-4">

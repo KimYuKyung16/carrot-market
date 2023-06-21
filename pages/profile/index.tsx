@@ -32,7 +32,7 @@ const Profile: NextPage = () => {
   );
   useEffect(() => {
     if (!logoutData || !logoutData?.ok) return;
-    router.replace("/enter");
+    router.reload();
   }, [logoutData]);
 
   return (
