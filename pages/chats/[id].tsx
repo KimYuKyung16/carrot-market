@@ -47,7 +47,7 @@ interface ReviewForm {
   review: string;
 }
 
-const socket = io("https://kcarrotmarket.store", {transports: ['websocket']});
+const socket = io("https://kcarrotmarket.store", { transports: ["websocket"] });
 const ChatDetail: NextPage = () => {
   const router = useRouter();
   const { register, handleSubmit } = useForm<ReviewForm>();
@@ -122,6 +122,14 @@ const ChatDetail: NextPage = () => {
       }
     });
   };
+  // const onKeyPress = (e: any) => {
+  //   console.log(e)
+  //   e.preventdefault();
+  //   if (e.key === 'Enter') {
+  //     onClickSendBtn();
+  //   }
+  // }
+
   const onClickSendBtn = async () => {
     if ((!router.query.id && !user) || loading) {
       swal("메시지 전송에 실패했습니다.");
@@ -212,6 +220,10 @@ const ChatDetail: NextPage = () => {
       window.removeEventListener("beforeunload", preventClose);
     };
   }, []);
+  const onClickEnter = (e: any) => {
+    e.preventDefault();
+    onClickSendBtn();
+  };
 
   return (
     <>
@@ -294,40 +306,61 @@ const ChatDetail: NextPage = () => {
           product_userId: productData?.product.userId,
         }}
       >
-        <div ref={scrollRef} className="py-10 pb-16 px-4 space-y-4">
+        <div ref={scrollRef} className="py-5 pb-16 px-4 space-y-4">
           {existMessage
             ? existMessage.map((message, i) => {
                 let { year, month, day, hour, minute } = getDateTime(
                   message.createdAt
                 );
+                let dayState =
+                  i >= 1 &&
+                  getDateTime(existMessage[i - 1].createdAt).day === day;
+
                 return message.notification ? (
-                  <NotificationMessage
-                    key={i}
-                    message={message.message}
-                    avatarUrl={message.User.avatar}
-                    date={hour + ":" + minute}
-                    name={message.User.name}
-                    reversed={user?.id === message.userId}
-                    senderId={message.userId}
-                    productId={messageList?.productName.product.id}
-                    existMessage={existMessage}
-                    chatId={router.query.id}
-                    existMessageIndex={i}
-                  />
+                  <>
+                    {!dayState ? (
+                      <div className="flex justify-center">
+                        <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
+                      </div>
+                    ) : null}
+                    <NotificationMessage
+                      key={i}
+                      message={message.message}
+                      avatarUrl={message.User.avatar}
+                      date={hour + ":" + minute}
+                      name={message.User.name}
+                      reversed={user?.id === message.userId}
+                      senderId={message.userId}
+                      productId={messageList?.productName.product.id}
+                      existMessage={existMessage}
+                      chatId={router.query.id}
+                      existMessageIndex={i}
+                    />
+                  </>
                 ) : (
-                  <Message
-                    key={i}
-                    message={message.message}
-                    avatarUrl={message.User.avatar}
-                    date={hour + ":" + minute}
-                    name={message.User.name}
-                    reversed={user?.id === message.userId}
-                  />
+                  <>
+                    {!dayState ? (
+                      <div className="flex justify-center">
+                        <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
+                      </div>
+                    ) : null}
+                    <Message
+                      key={i}
+                      message={message.message}
+                      avatarUrl={message.User.avatar}
+                      date={hour + ":" + minute}
+                      name={message.User.name}
+                      reversed={user?.id === message.userId}
+                    />
+                  </>
                 );
               })
             : null}
 
-          <form className="fixed py-2 bottom-0 inset-x-0 pb-5">
+          <form
+            onSubmit={onClickEnter}
+            className="fixed py-2 bottom-0 inset-x-0 pb-5"
+          >
             <div className="flex relative max-w-lg items-center h-9 w-full mx-auto border border-gray-300 rounded-md">
               <input
                 ref={sendRef}

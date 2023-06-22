@@ -7,7 +7,7 @@ import { Stream } from "@prisma/client";
 import { useForm } from "react-hook-form";
 import useMutation from "@libs/client/useMutation";
 import useUser from "@libs/client/useUser";
-import { useEffect } from "react";
+import { getDateTime } from "@libs/client/getDateTime";
 
 interface StreamMessage {
   message: string;
@@ -15,6 +15,8 @@ interface StreamMessage {
   user: {
     avatar?: string;
     id: number;
+    createdAt: string;
+    name: string;
   };
 }
 
@@ -116,16 +118,33 @@ const Streams: NextPage = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Live Chat</h2>
           <div className="py-10 pb-16 h-[50vh] overflow-y-auto  px-4 space-y-4">
-            {data?.stream.messages.map((message) => (
-              <Message
-                key={message.id}
-                message={message.message}
-                avatarUrl={message.user.avatar}
-                reversed={message.user.id === user?.id}
-                date={""}
-                name={""}
-              />
-            ))}
+            {data?.stream.messages.map((message, i) => {
+              let { year, month, day, hour, minute } = getDateTime(
+                message.user.createdAt
+              );
+              let dayState =
+                i >= 1 &&
+                getDateTime(data?.stream.messages[i - 1].user.createdAt).day ===
+                  day;
+
+              return (
+                <>
+                  {!dayState ? (
+                    <div className="flex justify-center">
+                      <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
+                    </div>
+                  ) : null}
+                  <Message
+                    key={message.id}
+                    message={message.message}
+                    avatarUrl={message.user.avatar}
+                    reversed={message.user.id === user?.id}
+                    date={hour + ":" + minute}
+                    name={message.user.name}
+                  />
+                </>
+              );
+            })}
           </div>
           <div className="fixed py-2 bg-white bottom-0 inset-x-0 pb-5">
             <form

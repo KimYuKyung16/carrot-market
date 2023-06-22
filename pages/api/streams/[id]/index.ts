@@ -32,6 +32,8 @@ async function handler(
             select: {
               avatar: true,
               id: true,
+              createdAt: true,
+              name: true,
             },
           },
         },
