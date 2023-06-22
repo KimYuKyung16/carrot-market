@@ -65,6 +65,7 @@ const Enter: NextPage = () => {
     if (loading) return;
     enter(validForm);
   };
+
   useEffect(() => {
     if (!data?.ok && data?.error) {
       swal(data?.error);
@@ -77,10 +78,10 @@ const Enter: NextPage = () => {
     };
     const sendEmail = async () => {
       let send = await emailjs.send(
-        process.env.EMAILJS_SERVICE_ID as string,
-        process.env.EMAILJS_TEMPLATE_ID as string,
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID as string,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID as string,
         templateParmas,
-        process.env.EMAILJS_PUBLIC_KEY as string
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY as string,
       );
       if (send.status === 200) {
         swal("이메일을 확인해주세요");
