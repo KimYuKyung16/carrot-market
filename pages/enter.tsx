@@ -11,6 +11,7 @@ import swal from "sweetalert";
 import { User } from "@prisma/client";
 import useUser from "@libs/client/useUser";
 import useSWR from "swr";
+import Link from "next/link";
 
 interface EnterForm {
   email?: string;
@@ -25,6 +26,7 @@ interface MutationResult {
   ok: boolean;
   token: number;
   email: string;
+  error?: string;
 }
 
 interface ProfileResponse {
@@ -32,9 +34,14 @@ interface ProfileResponse {
   profile: User;
 }
 
+// interface AccountReponse {
+//   ok: boolean;
+// }
+
 const Enter: NextPage = () => {
   const router = useRouter();
   const { data: userData } = useSWR<ProfileResponse>("/api/users/me");
+  // const { data: accountData} = useSWR<AccountReponse>("/api/user/enter");
   const [enter, { loading, data, error }] = useMutation<MutationResult>(
     "/api/users/enter",
     "POST"
@@ -58,8 +65,11 @@ const Enter: NextPage = () => {
     if (loading) return;
     enter(validForm);
   };
-
   useEffect(() => {
+    if (!data?.ok && data?.error) {
+      swal(data?.error);
+      return;
+    }
     if (!data?.email || !data.token) return;
     let templateParmas = {
       user_email: data?.email,
@@ -84,7 +94,6 @@ const Enter: NextPage = () => {
     confirmToken(validForm);
   };
   useEffect(() => {
-    // console.log(tokenData)
     if (tokenData && tokenData?.ok) {
       router.replace("/");
       router.reload();
@@ -98,7 +107,7 @@ const Enter: NextPage = () => {
 
   return (
     <div className="mt-16 px-4">
-      <h3 className="text-3xl font-bold text-center">Enter to Carrot</h3>
+      <h3 className="text-3xl font-bold text-center">Carrot Market</h3>
       <div className="mt-12">
         {data?.ok ? (
           <form
@@ -175,9 +184,9 @@ const Enter: NextPage = () => {
                   required
                 />
               ) : null}
-              {method === "email" ? <Button text={"Get login link"} /> : null}
+              {method === "email" ? <Button text={"로그인 링크 받기"} /> : null}
               {method === "phone" ? (
-                <Button text={loading ? "Loading" : "Get one-time password"} />
+                <Button text={loading ? "Loading" : "로그인 토큰 값 받기"} />
               ) : null}
             </form>
           </>
@@ -218,6 +227,11 @@ const Enter: NextPage = () => {
               </svg>
             </button>
           </div>
+          <Link href="/account">
+            <a className="flex justify-end mt-4 mr-3 text-orange-500 hover:text-orange-600 font-bold cursor-pointer text">
+              <p>회원가입</p>
+            </a>
+          </Link>
         </div>
       </div>
     </div>

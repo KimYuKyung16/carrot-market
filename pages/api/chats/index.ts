@@ -13,8 +13,6 @@ async function handler(
       session: { user },
     } = req;
 
-    console.log(productId, sellerId);
-
     const chat = await client.chat.create({
       data: {
         product: {
