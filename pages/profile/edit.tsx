@@ -50,13 +50,14 @@ const EditProfile: NextPage = () => {
   );
 
   const onValid = async ({ email, phone, name, avatar }: EditProfiltForm) => {
-    if (loading || !uploadUrl) return;
+    if (loading) return;
     if (email === "" && phone === "" && name === "") {
       return setError("formErrors", {
         message: "이메일 혹은 전화번호가 필요합니다. 하나를 선택하세요",
       });
     }
-    if (avatar) {
+    if (avatar && avatar.length >= 1) {
+      if (!uploadUrl) return;
       const {
         nFilename,
         image: { url, fields },
