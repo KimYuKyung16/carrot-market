@@ -50,7 +50,13 @@ async function handler(
       stream,
     });
   } else if (req.method === "GET") {
-    const streams = await client.stream.findMany();
+    const streams = await client.stream.findMany({
+      select: {
+        id: true,
+        cloudflareId: true,
+        name: true,
+      },
+    });
     res.json({ ok: true, streams });
   }
 }

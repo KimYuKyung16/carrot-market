@@ -28,11 +28,11 @@ async function handler(
         select: {
           id: true,
           message: true,
+          createdAt: true,
           user: {
             select: {
               avatar: true,
               id: true,
-              createdAt: true,
               name: true,
             },
           },
@@ -50,10 +50,12 @@ async function handler(
         select: {
           id: true,
           message: true,
+          createdAt: true,
           user: {
             select: {
               avatar: true,
               id: true,
+              name: true,
             },
           },
         },

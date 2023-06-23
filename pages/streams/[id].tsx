@@ -12,10 +12,10 @@ import { getDateTime } from "@libs/client/getDateTime";
 interface StreamMessage {
   message: string;
   id: number;
+  createdAt: string;
   user: {
     avatar?: string;
     id: number;
-    createdAt: string;
     name: string;
   };
 }
@@ -120,11 +120,11 @@ const Streams: NextPage = () => {
           <div className="py-10 pb-16 h-[50vh] overflow-y-auto  px-4 space-y-4">
             {data?.stream.messages.map((message, i) => {
               let { year, month, day, hour, minute } = getDateTime(
-                message.user.createdAt
+                message.createdAt
               );
               let dayState =
                 i >= 1 &&
-                getDateTime(data?.stream.messages[i - 1].user.createdAt).day ===
+                getDateTime(data?.stream.messages[i - 1].createdAt).day ===
                   day;
 
               return (

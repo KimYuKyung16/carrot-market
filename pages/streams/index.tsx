@@ -22,7 +22,7 @@ const Streams: NextPage = () => {
             <a className="pt-4 block  px-4">
               <div className="w-full aspect-video bg-black overflow-hidden">
                 <iframe
-                  src={`https://customer-qkzviq88w8n4p4hm.cloudflarestream.com/dc6c070b1d4bdfb8c16569cbb1d87db0/thumbnails/thumbnail.jpg?height=305`}
+                  src={`https://customer-qkzviq88w8n4p4hm.cloudflarestream.com/${stream.cloudflareId}/thumbnails/thumbnail.jpg?height=305`}
                   className="w-full h-full rounded-md shadow-sm border-none "
                   allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                   allowFullScreen={true}
