@@ -1,27 +1,67 @@
 import client from "@libs/server/client";
-import withHandler, { ResponseType } from "@libs/server/withHandler";
+// import withHandler, { ResponseType } from "@libs/server/withHandler";
+import withHandler from "@libs/server/withHandler";
 import { NextApiRequest, NextApiResponse } from "next";
 import { withApiSession } from "@libs/server/withSession";
+
+export interface ResponseType {
+  [key: string]: any;
+}
 
 async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
   if (req.method === "GET") {
-    const products = await client.product.findMany({
-      include: {
-        _count: {
-          select: {
-            favs: true,
-            Chat: true,
+    const {
+      query: { cursor },
+    } = req;
+    if (!cursor) {
+      const products = await client.product.findMany({
+        take: 20,
+        include: {
+          _count: {
+            select: {
+              favs: true,
+              Chat: true,
+            },
           },
         },
-      },
-    });
-    res.json({
-      ok: true,
-      products,
-    });
+      });
+      res.json({
+        // ok: true,
+
+        products,
+        cursor: products[products.length - 1].id,
+      });
+    } else {
+      const products = await client.product.findMany({
+        take: 20,
+        skip: 1,
+        cursor: {
+          id: req.query.cursor ? +req.query.cursor : undefined,
+        },
+        include: {
+          _count: {
+            select: {
+              favs: true,
+              Chat: true,
+            },
+          },
+        },
+      });
+      if (products.length) {
+        res.json({
+          products,
+          cursor: products[products.length - 1].id,
+        });
+      } else {
+        res.json({
+          products: [],
+          cursor: null,
+        });
+      }
+    }
   }
   if (req.method === "POST") {
     const {

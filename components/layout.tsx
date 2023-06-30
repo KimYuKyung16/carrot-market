@@ -10,7 +10,7 @@ interface LayoutProps {
   canGoBack?: boolean;
   hasTabBar?: boolean;
   children: React.ReactNode;
-  chat?: { onClickTranscation: () => void; product_userId?: number; };
+  chat?: { onClickTranscation: () => void; product_userId?: number };
   [key: string]: any;
 }
 
@@ -28,7 +28,7 @@ export default function Layout({
   };
   return (
     <div>
-      <div className="bg-white w-full h-12 max-w-xl justify-center text-lg px-10 font-medium  fixed text-gray-800 border-b top-0  flex items-center">
+      <div className="z-10 bg-white w-full h-12 max-w-xl justify-center text-lg px-10 font-medium  fixed text-gray-800 border-b top-0  flex items-center">
         {canGoBack ? (
           <button onClick={onClick} className="absolute left-4">
             <svg
@@ -50,7 +50,7 @@ export default function Layout({
         {title ? (
           <span className={cls(canGoBack ? "mx-auto" : "", "")}>{title}</span>
         ) : null}
-        {chat && !isLoading && user &&  chat.product_userId === user.id ? (
+        {chat && !isLoading && user && chat.product_userId === user.id ? (
           <button
             onClick={chat.onClickTranscation}
             className={

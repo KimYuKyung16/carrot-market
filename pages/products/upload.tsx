@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import { S3 } from "aws-sdk";
 import useUser from "@libs/client/useUser";
 import useSWR from "swr";
+import imageCompression from "browser-image-compression";
 
 interface UploadProductForm {
   image: FileList;
@@ -36,23 +37,31 @@ const Upload: NextPage = () => {
   const { user } = useUser();
   const { register, handleSubmit, watch } = useForm<UploadProductForm>();
   const productImage = watch("image");
+  const [imageInfo, setImageInfo] = useState({ name: "", type: "" });
   const { data: uploadUrl } = useSWR<UploadProduct>(
-    productImage && productImage[0] && user
-      ? `/api/upload-url?file=${productImage[0].name}&fileType=${productImage[0].type}&userId=${user?.id}&type=product`
+    imageInfo.name && imageInfo.type && user
+      ? `/api/upload-url?file=${imageInfo.name}&fileType=${imageInfo.type}&userId=${user?.id}&type=product`
       : null
   );
   const [uploadProduct, { loading, data }] = useMutation<UploadProductMutation>(
     "/api/products",
     "POST"
   );
-
   const onValid = async ({ name, price, description }: UploadProductForm) => {
     if (loading || !uploadUrl) return;
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+    };
+    const compressedFile = await imageCompression(productImage[0], options);
+    let file = new File([compressedFile], compressedFile.name, {
+      type: "image/jpeg",
+    });
     const {
       nFilename,
       image: { url, fields },
     } = uploadUrl;
-    const file = productImage[0];
+
     const fd = new FormData();
     Object.entries({ ...fields, file }).forEach(([key, value]) => {
       fd.append(key, value as string);
@@ -70,13 +79,16 @@ const Upload: NextPage = () => {
       router.replace(`/products/${data.product.id}`);
     }
   }, [data, router]);
-
   const [productPreview, setProductPreview] = useState("");
   useEffect(() => {
     if (productImage && productImage.length > 0) {
       const file = productImage[0];
       setProductPreview(URL.createObjectURL(file));
     }
+  }, [productImage]);
+  useEffect(() => {
+    if (!productImage || productImage.length <= 0) return;
+    setImageInfo({ name: productImage[0].name, type: productImage[0].type });
   }, [productImage]);
   return (
     <Layout canGoBack title="Upload Product">

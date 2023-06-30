@@ -1,4 +1,5 @@
 import { Product } from "@prisma/client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import swal from "sweetalert";
@@ -41,11 +42,21 @@ export default function Item({
   return (
     <div
       onClick={onClickProduct}
-      className="flex px-4 pt-5 cursor-pointer justify-between"
+      className="flex px-4 pt-5 w-100 cursor-pointer justify-between"
     >
       <div className="flex space-x-4 w-full">
         {image ? (
-          <img src={image} className="w-20 h-20 bg-gray-400 rounded-md" />
+          <Image
+            priority={true}
+            loader={() => {
+              return image + "?w=" + 80;
+            }}
+            src={image}
+            className="w-20 h-20 bg-gray-400 rounded-md"
+            width={80}
+            height={80}
+            alt="판매 제품"
+          />
         ) : (
           <div className="w-20 h-20 bg-gray-400 rounded-md" />
         )}
