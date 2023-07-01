@@ -34,8 +34,9 @@ const Profile: NextPage = () => {
     if (!logoutData || !logoutData?.ok) return;
     router.reload();
   }, [logoutData]);
-
-  localStorage.removeItem('productSearch');
+  useEffect(() => {
+    localStorage.removeItem('productSearch');
+  }, [])
 
   return (
     <Layout hasTabBar title="나의 캐럿">

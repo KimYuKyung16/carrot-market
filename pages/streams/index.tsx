@@ -5,6 +5,7 @@ import Layout from "@components/layout";
 import { Stream } from "@prisma/client";
 import useSWR from "swr";
 import Image from "next/image";
+import { useEffect } from "react";
 
 interface StreamsResponse {
   ok: boolean;
@@ -13,7 +14,9 @@ interface StreamsResponse {
 
 const Streams: NextPage = () => {
   const { data } = useSWR<StreamsResponse>(`/api/streams`); // 주소가 SWR의 key 역할을 한다.
-  localStorage.removeItem('productSearch');
+  useEffect(() => {
+    localStorage.removeItem('productSearch');
+  }, [])
   return (
     <Layout hasTabBar title="라이브">
       <div className=" divide-y-[1px] space-y-4">

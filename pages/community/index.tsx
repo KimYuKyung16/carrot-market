@@ -5,6 +5,7 @@ import Layout from "@components/layout";
 import useSWR from "swr";
 import { Post, User } from "@prisma/client";
 import useCoords from "@libs/client/useCoords";
+import { useEffect } from "react";
 
 interface PostWithUser extends Post {
   user: User;
@@ -26,7 +27,9 @@ const Community: NextPage = () => {
       ? `/api/posts?latitude=${latitude}&longitude=${longitude}`
       : null
   );
-  localStorage.removeItem('productSearch');
+  useEffect(() => {
+    localStorage.removeItem('productSearch');
+  }, [])
 
   return (
     <Layout hasTabBar title="동네생활">

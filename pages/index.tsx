@@ -23,7 +23,7 @@ const Home: NextPage = () => {
   const loadRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
   const [search, setSearch] = useState('');
-  const { data, size, setSize, mutate } = useSWRInfinite<ProductResponse>(
+  const { data, size, setSize } = useSWRInfinite<ProductResponse>(
     (pageIndex: number, previousPageData: ProductResponse) => {
       if (previousPageData && previousPageData.products.length < 20) {
         setVisible(false);
