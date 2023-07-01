@@ -14,54 +14,118 @@ async function handler(
 ) {
   if (req.method === "GET") {
     const {
-      query: { cursor },
+      query: { cursor, search },
     } = req;
-    if (!cursor) {
-      const products = await client.product.findMany({
-        take: 20,
-        include: {
-          _count: {
-            select: {
-              favs: true,
-              Chat: true,
+    if (search) {
+      if (!cursor) {
+        const products = await client.product.findMany({
+          take: 20,
+          include: {
+            _count: {
+              select: {
+                favs: true,
+                Chat: true,
+              },
             },
           },
-        },
-      });
-      res.json({
-        // ok: true,
-
-        products,
-        cursor: products[products.length - 1].id,
-      });
+          where: {
+            name: {
+              contains: search as string,
+            }
+          },
+        });
+        if (products.length) {
+          res.json({
+            products,
+            cursor: products[products.length - 1].id,
+          });
+        } else {
+          res.json({
+            products: [],
+            cursor: null,
+          });
+        }
+      } else {
+        console.log('??:',cursor)
+        const products = await client.product.findMany({
+          take: 20,
+          skip: 1,
+          cursor: {
+            id: +cursor
+          },
+          include: {
+            _count: {
+              select: {
+                favs: true,
+                Chat: true,
+              },
+            },
+          },
+          where: {
+            name: {
+              contains: search as string,
+            }
+          },
+        });
+        if (products.length) {
+          res.json({
+            products,
+            cursor: products.length === 20 ? products[products.length - 1].id : null
+          });
+        } else {
+          res.json({
+            products: [],
+            cursor: null,
+          });
+        }
+      }
     } else {
-      const products = await client.product.findMany({
-        take: 20,
-        skip: 1,
-        cursor: {
-          id: req.query.cursor ? +req.query.cursor : undefined,
-        },
-        include: {
-          _count: {
-            select: {
-              favs: true,
-              Chat: true,
+      if (!cursor) {
+        const products = await client.product.findMany({
+          take: 20,
+          include: {
+            _count: {
+              select: {
+                favs: true,
+                Chat: true,
+              },
             },
           },
-        },
-      });
-      if (products.length) {
+        });
         res.json({
           products,
           cursor: products[products.length - 1].id,
         });
       } else {
-        res.json({
-          products: [],
-          cursor: null,
+        const products = await client.product.findMany({
+          take: 20,
+          skip: 1,
+          cursor: {
+            id: req.query.cursor ? +req.query.cursor : undefined,
+          },
+          include: {
+            _count: {
+              select: {
+                favs: true,
+                Chat: true,
+              },
+            },
+          },
         });
+        if (products.length) {
+          res.json({
+            products,
+            cursor: products[products.length - 1].id,
+          });
+        } else {
+          res.json({
+            products: [],
+            cursor: null,
+          });
+        }
       }
     }
+
   }
   if (req.method === "POST") {
     const {

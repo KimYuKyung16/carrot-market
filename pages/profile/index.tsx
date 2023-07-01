@@ -35,6 +35,8 @@ const Profile: NextPage = () => {
     router.reload();
   }, [logoutData]);
 
+  localStorage.removeItem('productSearch');
+
   return (
     <Layout hasTabBar title="나의 캐럿">
       <div className="px-4">

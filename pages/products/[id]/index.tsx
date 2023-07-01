@@ -94,6 +94,11 @@ const ItemDetail: NextPage = () => {
     createChat({ productId: data?.product.id, sellerId: data?.product.userId });
   };
   useEffect(() => {
+    if (!data || !data?.product) {
+      router.back();
+    }
+  }, [])
+  useEffect(() => {
     if (chatData && chatData.ok) {
       router.push(`/chats/${chatData.chat.id}`);
     }
@@ -109,7 +114,9 @@ const ItemDetail: NextPage = () => {
 
   return (
     <Layout canGoBack>
-      <div className="px-4  py-4">
+      {
+        data && data.product ?
+        <div className="px-4  py-4">
         <div className="mb-8">
           {data?.product.image ? (
             <img src={data.product.image} className="w-full aspect-video" />
@@ -227,7 +234,8 @@ const ItemDetail: NextPage = () => {
             ))}
           </div>
         </div>
-      </div>
+      </div> : null
+      }
     </Layout>
   );
 };

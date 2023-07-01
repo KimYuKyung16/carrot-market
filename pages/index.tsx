@@ -7,6 +7,7 @@ import { Product } from "@prisma/client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 import { cls } from "@libs/client/utils";
+import { useRouter } from "next/router";
 
 export interface ProductWithCount extends Product {
   _count: { favs: number; Chat: number };
@@ -18,17 +19,19 @@ interface ProductResponse {
 }
 
 const Home: NextPage = () => {
+  const router = useRouter();
   const loadRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
-  const { data, size, setSize } = useSWRInfinite<ProductResponse>(
+  const [search, setSearch] = useState('');
+  const { data, size, setSize, mutate } = useSWRInfinite<ProductResponse>(
     (pageIndex: number, previousPageData: ProductResponse) => {
       if (previousPageData && previousPageData.products.length < 20) {
         setVisible(false);
         return null;
       }
-      return previousPageData
-        ? `/api/products?cursor=${previousPageData.cursor}`
-        : `/api/products`;
+      return search
+        ? (previousPageData ? `/api/products?cursor=${previousPageData.cursor}&search=${search}` : `/api/products?search=${search}`)
+        : (previousPageData ? `/api/products?cursor=${previousPageData.cursor}` : `/api/products`)
     }
   );
 
@@ -53,9 +56,35 @@ const Home: NextPage = () => {
       if (target) observer.unobserve(target);
     };
   }, [loadRef, options, data]);
+  const searchFunc = (search: string) => {
+    localStorage.setItem('productSearch', search);
+    if (search.trim().length <= 0) return; 
+    setSearch(search);
+    setSize(1);
+    setVisible(true);
+  }
+  useEffect(() => {
+    const productSearch = localStorage.getItem('productSearch');
+    if (productSearch) {
+      setSearch(productSearch);
+      setVisible(true);
+    }
+  }, [data])
+
+  const reload = () => {
+    localStorage.removeItem('productSearch')
+  };
+  useEffect(() => {
+    (() => {
+      window.addEventListener("beforeunload", reload);
+    })();
+    return () => {
+      window.removeEventListener("beforeunload", reload);
+    };
+  }, []);
 
   return (
-    <Layout title="홈" hasTabBar>
+    <Layout title="홈" hasTabBar search searchFunc={searchFunc}>
       <Head>
         <title>Home</title>
       </Head>
@@ -79,7 +108,7 @@ const Home: NextPage = () => {
         <div
           ref={loadRef}
           className={cls(
-            "flex justify-center bg-white non",
+            "flex justify-center bg-white",
             visible ? "block" : "hidden"
           )}
         >

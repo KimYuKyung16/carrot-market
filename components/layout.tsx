@@ -1,9 +1,9 @@
-import React from "react";
+import React, { ReactHTMLElement, useRef } from "react";
 import Link from "next/link";
 import { cls } from "@libs/client/utils";
 import { useRouter } from "next/router";
-import Button from "@components/button";
 import useUser from "@libs/client/useUser";
+import swal from "sweetalert";
 
 interface LayoutProps {
   title?: string;
@@ -11,7 +11,9 @@ interface LayoutProps {
   hasTabBar?: boolean;
   children: React.ReactNode;
   chat?: { onClickTranscation: () => void; product_userId?: number };
+  search?: boolean;
   [key: string]: any;
+  searchFunc?: Function;
 }
 
 export default function Layout({
@@ -20,15 +22,27 @@ export default function Layout({
   hasTabBar,
   children,
   chat,
+  search,
+  searchFunc,
 }: LayoutProps) {
   const router = useRouter();
+  const searchRef = useRef<HTMLInputElement>(null);
   const { user, isLoading } = useUser();
   const onClick = () => {
     router.back();
   };
+  const onClickSearch = (e: any) => {
+    e.preventDefault();
+    if (!searchFunc || !search) return;
+    if (!searchRef.current || searchRef.current.value.trim() === '') {
+      swal("검색어를 입력해주세요");
+      return;
+    }
+    searchFunc(searchRef.current?.value);
+  }
   return (
     <div>
-      <div className="z-10 bg-white w-full h-12 max-w-xl justify-center text-lg px-10 font-medium  fixed text-gray-800 border-b top-0  flex items-center">
+      <div className="bg-white w-full h-12 max-w-xl justify-center text-lg px-10 font-medium  fixed text-gray-800 border-b top-0  flex items-center">
         {canGoBack ? (
           <button onClick={onClick} className="absolute left-4">
             <svg
@@ -59,6 +73,12 @@ export default function Layout({
           >
             거래
           </button>
+        ) : null}
+        {search ? (
+          <form onSubmit={onClickSearch} className="flex items-center absolute right-0 h-10 bg-white w-1/3 p-1 border border-gray-200 rounded-lg focus-within:w-full text-sm">
+            <input ref={searchRef} placeholder="제품 검색" className="outline-none w-full text-gray-600 p-2"/>
+            <img onClick={onClickSearch} src="/search_icon.svg" className="h-4/5" />
+          </form>
         ) : null}
       </div>
       <div className={cls("pt-12", hasTabBar ? "pb-24" : "")}>{children}</div>

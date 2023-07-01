@@ -26,6 +26,7 @@ const Community: NextPage = () => {
       ? `/api/posts?latitude=${latitude}&longitude=${longitude}`
       : null
   );
+  localStorage.removeItem('productSearch');
 
   return (
     <Layout hasTabBar title="동네생활">
