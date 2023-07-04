@@ -46,13 +46,15 @@ export default function Item({
           <Image
             priority={true}
             loader={() => {
-              return image + "?w=" + 80;
+              return image + "?w=80"
             }}
             src={image}
               className="-z-10 w-20 h-20 bg-gray-400 rounded-md"
               width={80}
               height={80}
               alt="판매 제품"
+              // placeholder="blur"
+              // blurDataURL={image}
             />
           ) : (
             <div className="w-20 h-20 bg-gray-400 rounded-md" />

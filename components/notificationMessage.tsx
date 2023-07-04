@@ -38,7 +38,7 @@ interface ProductResponse {
   ok: boolean;
 }
 
-const socket = io("https://kcarrotmarket.store",{transports: ['websocket']});
+const socket = io("https://kcarrotmarket.store");
 export default function NotificationMessage({
   message,
   avatarUrl,

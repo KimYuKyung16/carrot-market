@@ -19,16 +19,17 @@ interface ProductResponse {
 }
 
 const Home: NextPage = () => {
-  const router = useRouter();
   const loadRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
   const [search, setSearch] = useState('');
+  const [load, setLoad] = useState(false);
   const { data, size, setSize } = useSWRInfinite<ProductResponse>(
     (pageIndex: number, previousPageData: ProductResponse) => {
       if (previousPageData && previousPageData.products.length < 20) {
         setVisible(false);
         return null;
       }
+      if (!load) return;
       return search
         ? (previousPageData ? `/api/products?cursor=${previousPageData.cursor}&search=${search}` : `/api/products?search=${search}`)
         : (previousPageData ? `/api/products?cursor=${previousPageData.cursor}` : `/api/products`)
@@ -65,10 +66,11 @@ const Home: NextPage = () => {
   }
   useEffect(() => {
     const productSearch = localStorage.getItem('productSearch');
-    if (productSearch) {
+    if (productSearch && search === '') {
       setSearch(productSearch);
       setVisible(true);
     }
+    setLoad(true);
   }, [data])
 
   const reload = () => {

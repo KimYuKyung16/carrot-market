@@ -46,7 +46,6 @@ async function handler(
           });
         }
       } else {
-        console.log('??:',cursor)
         const products = await client.product.findMany({
           take: 20,
           skip: 1,

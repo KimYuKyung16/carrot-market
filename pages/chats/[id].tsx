@@ -47,7 +47,7 @@ interface ReviewForm {
   review: string;
 }
 
-const socket = io("https://kcarrotmarket.store", { transports: ["websocket"] });
+const socket = io("https://kcarrotmarket.store");
 const ChatDetail: NextPage = () => {
   const router = useRouter();
   const { register, handleSubmit } = useForm<ReviewForm>();
@@ -317,14 +317,13 @@ const ChatDetail: NextPage = () => {
                   getDateTime(existMessage[i - 1].createdAt).day === day;
 
                 return message.notification ? (
-                  <>
+                  <div key={i}>
                     {!dayState ? (
                       <div className="flex justify-center">
                         <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
                       </div>
                     ) : null}
                     <NotificationMessage
-                      key={i}
                       message={message.message}
                       avatarUrl={message.User.avatar}
                       date={hour + ":" + minute}
@@ -336,23 +335,22 @@ const ChatDetail: NextPage = () => {
                       chatId={router.query.id}
                       existMessageIndex={i}
                     />
-                  </>
+                  </div>
                 ) : (
-                  <>
+                  <div key={i}>
                     {!dayState ? (
                       <div className="flex justify-center">
                         <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
                       </div>
                     ) : null}
                     <Message
-                      key={i}
                       message={message.message}
                       avatarUrl={message.User.avatar}
                       date={hour + ":" + minute}
                       name={message.User.name}
                       reversed={user?.id === message.userId}
                     />
-                  </>
+                  </div>
                 );
               })
             : null}

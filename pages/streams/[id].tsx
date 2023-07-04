@@ -73,7 +73,6 @@ const Streams: NextPage = () => {
     );
     sendMessage(form);
   };
-
   return (
     <Layout canGoBack>
       <div className="py-10 px-4  space-y-4">
@@ -119,30 +118,29 @@ const Streams: NextPage = () => {
           <h2 className="text-2xl font-bold text-gray-900">Live Chat</h2>
           <div className="py-10 pb-16 h-[50vh] overflow-y-auto  px-4 space-y-4">
             {data?.stream.messages.map((message, i) => {
+              let dayState = true;
               let { year, month, day, hour, minute } = getDateTime(
                 message.createdAt
               );
-              let dayState =
-                i >= 1 &&
-                getDateTime(data?.stream.messages[i - 1].createdAt).day ===
-                  day;
-
+              dayState = 
+              i >= 1 &&
+              getDateTime(data?.stream.messages[i - 1].createdAt).day === day;
+    
               return (
-                <>
-                  {!dayState ? (
+                <div key={message.id}>
+                  {!dayState && message.createdAt ? (
                     <div className="flex justify-center">
                       <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
                     </div>
                   ) : null}
                   <Message
-                    key={message.id}
                     message={message.message}
                     avatarUrl={message.user.avatar}
                     reversed={message.user.id === user?.id}
-                    date={hour + ":" + minute}
+                    date={hour ? hour + ":" + minute : null}
                     name={message.user.name}
                   />
-                </>
+                </div>
               );
             })}
           </div>

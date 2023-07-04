@@ -4,7 +4,7 @@ interface MessageProps {
   message: string;
   reversed?: boolean;
   avatarUrl?: string | null;
-  date: string;
+  date: string | null;
   name: string;
 }
 
@@ -30,7 +30,7 @@ export default function Message({
           )}
         >
           <p className="whitespace-pre">{name}</p>
-          <p className="text-gray-500 whitespace-pre">{date}</p>
+          <p className="text-gray-500 whitespace-pre">{date ? date : ''}</p>
         </div>
         <div className={cls("flex gap-2", reversed ? "flex-row-reverse" : "")}>
           {avatarUrl ? (
