@@ -93,11 +93,11 @@ const ItemDetail: NextPage = () => {
     }
     createChat({ productId: data?.product.id, sellerId: data?.product.userId });
   };
-  useEffect(() => {
-    if (!data || !data?.product) {
+  useEffect(() => { // !data로 바꾸면 삭제되지 않은 물품을 보려고할 때도 router.back처리됨.
+    if (data && !data?.product) {
       router.back();
     }
-  }, [])
+  }, [data])
   useEffect(() => {
     if (chatData && chatData.ok) {
       router.push(`/chats/${chatData.chat.id}`);
