@@ -118,16 +118,16 @@ export default function NotificationMessage({
       swal("이미 거래가 끝난 물품입니다", "", "warning");
       return;
     }
-
     if (!messageList || !messageList.chatMessages[existMessageIndex]) return;
     deleteMessage({ id: messageList.chatMessages[existMessageIndex].id });
-
+    swal("거래가 취소되었습니다");
     let nexistMessage = [...existMessage];
     nexistMessage.splice(existMessageIndex, 1);
     socket.emit("deleteMessage", {
       roomNum: chatId,
       message: nexistMessage,
     });
+    mutate();
   };
 
   useEffect(() => {

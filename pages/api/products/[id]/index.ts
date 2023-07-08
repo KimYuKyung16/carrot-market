@@ -41,6 +41,7 @@ async function handler(
       },
     }));
     const relatedProducts = await client.product.findMany({
+      take: 6,
       where: {
         OR: terms,
         AND: {

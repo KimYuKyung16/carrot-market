@@ -43,30 +43,23 @@ const Upload: NextPage = () => {
       ? `/api/upload-url?file=${imageInfo.name}&fileType=${imageInfo.type}&userId=${user?.id}&type=product`
       : null
   );
+  const [compressedFile, setCompressedFile] = useState<File>();
   const [uploadProduct, { loading, data }] = useMutation<UploadProductMutation>(
     "/api/products",
     "POST"
   );
   const onValid = async ({ name, price, description }: UploadProductForm) => {
-    if (loading || !uploadUrl) return;
-    const options = {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 1920,
-    };
-    const compressedFile = await imageCompression(productImage[0], options);
-    let file = new File([compressedFile], compressedFile.name, {
-      type: "image/jpeg",
-    });
+    if (loading || !uploadUrl || !compressedFile) return;
     const {
       nFilename,
       image: { url, fields },
     } = uploadUrl;
-
     const fd = new FormData();
-    Object.entries({ ...fields, file }).forEach(([key, value]) => {
+    Object.entries({ ...fields, file: compressedFile }).forEach(([key, value]) => {
       fd.append(key, value as string);
     });
     const uploadImage = await fetch(url, { method: "POST", body: fd });
+    if (!uploadImage.ok) return;
     uploadProduct({
       file: uploadImage && uploadImage.ok ? nFilename : null,
       name,
@@ -81,40 +74,54 @@ const Upload: NextPage = () => {
   }, [data, router]);
   const [productPreview, setProductPreview] = useState("");
   useEffect(() => {
-    if (productImage && productImage.length > 0) {
-      const file = productImage[0];
+    const compressImage = async () => {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+      };
+      const compressedFile = await imageCompression(productImage[0], options);
+      const file = new File([compressedFile], compressedFile.name, {
+        type: "image/jpeg",
+      });
       setProductPreview(URL.createObjectURL(file));
+      setImageInfo({ name: productImage[0].name, type: productImage[0].type });
+      setCompressedFile(file);
+    }
+
+    if (productImage && productImage.length > 0) {
+      compressImage();
     }
   }, [productImage]);
-  useEffect(() => {
-    if (!productImage || productImage.length <= 0) return;
-    setImageInfo({ name: productImage[0].name, type: productImage[0].type });
-  }, [productImage]);
+
   return (
     <Layout canGoBack title="Upload Product">
       <form className="p-4 space-y-4" onSubmit={handleSubmit(onValid)}>
         <div>
           {productPreview ? (
-            <label className="w-full text-gray-600 aspect-video rounded-md">
-              <img src={productPreview} />
+            <label className="w-full text-gray-600 rounded-md">
+              <div className="w-full h-0 aspect-w-16 aspect-h-9">
+                <img src={productPreview}/>
+              </div>
               <input {...register("image")} className="hidden" type="file" />
             </label>
           ) : (
-            <label className="w-full cursor-pointer text-gray-600 hover:border-orange-500 hover:text-orange-500 flex items-center justify-center border-2 border-dashed border-gray-300 h-48 rounded-md">
-              <svg
-                className="h-12 w-12"
-                stroke="currentColor"
-                fill="none"
-                viewBox="0 0 48 48"
-                aria-hidden="true"
-              >
-                <path
-                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+            <label className="h-0 w-full aspect-w-16 aspect-h-9 cursor-pointer flex items-center justify-center rounded-md">
+              <div className="w-full h-full cursor-pointer text-gray-600 hover:border-orange-500 hover:text-orange-500 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md">
+                <svg
+                  className="h-12 w-12"
+                  stroke="currentColor"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
               <input {...register("image")} className="hidden" type="file" />
             </label>
           )}
