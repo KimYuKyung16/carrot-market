@@ -77,14 +77,16 @@ const Streams: NextPage = () => {
     <Layout canGoBack>
       <div className="py-10 px-4  space-y-4">
         {data?.stream.cloudflareId ? (
-          <iframe
-            src={`https://customer-qkzviq88w8n4p4hm.cloudflarestream.com/${data?.stream.cloudflareId}/iframe`}
-            className="w-full aspect-video rounded-md shadow-sm"
-            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-            allowFullScreen={true}
-          ></iframe>
+          <div className="h-0 w-full aspect-w-16 aspect-h-9">
+            <iframe
+              src={`https://customer-qkzviq88w8n4p4hm.cloudflarestream.com/${data?.stream.cloudflareId}/iframe`}
+              className="w-full aspect-video rounded-md shadow-sm"
+              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+              allowFullScreen={true}
+            ></iframe>
+          </div>
         ) : (
-          <div className="w-full aspect-video bg-gray-300"></div>
+          <div className="h-0 w-full aspect-w-16 aspect-h-9 bg-gray-300"></div>
         )}
         <div className="mt-5">
           <h1 className="text-3xl font-bold text-gray-900">

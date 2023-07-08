@@ -23,7 +23,7 @@ const Streams: NextPage = () => {
         {data?.streams.map((stream) => (
           <Link key={stream.id} href={`/streams/${stream.id}`}>
             <a className="pt-4 block  px-4">
-              <div className="w-full aspect-video bg-black overflow-hidden">
+              <div className="h-0 w-full aspect-w-16 aspect-h-9 bg-black overflow-hidden">
                 <iframe
                   src={`https://customer-qkzviq88w8n4p4hm.cloudflarestream.com/${stream.cloudflareId}/thumbnails/thumbnail.jpg?height=305`}
                   className="w-full h-full rounded-md shadow-sm border-none "

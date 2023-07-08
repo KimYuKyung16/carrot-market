@@ -98,13 +98,17 @@ const Edit: NextPage = () => {
       <form className="p-4 space-y-4" onSubmit={handleSubmit(onValid)}>
         <div>
           {productPreview ? (
-            <label className="w-full text-gray-600 aspect-video rounded-md">
-              <img src={productPreview} />
+            <label className="w-full text-gray-600 rounded-md">
+              <div className="w-full h-0 aspect-w-16 aspect-h-9">
+                <img src={productPreview}/>
+              </div>
               <input {...register("image")} className="hidden" type="file" />
             </label>
           ) : productData?.product.image ? (
-            <label className="w-full text-gray-600 aspect-video rounded-md">
-              <img src={productData.product.image} />
+            <label className="w-full text-gray-600 rounded-md">
+              <div className="w-full h-0 aspect-w-16 aspect-h-9">
+                <img src={productData.product.image}/>
+              </div>
               <input {...register("image")} className="hidden" type="file" />
             </label>
           ) : (

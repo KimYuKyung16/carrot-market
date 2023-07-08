@@ -127,7 +127,6 @@ const ItemDetail: NextPage = () => {
                     return data.product.image + "?w=100%";
                   }}
                   src={data.product.image}
-                  className="w-full aspect-video"
                   placeholder="blur"
                   blurDataURL={data.product.image}
                   layout="fill"
@@ -233,12 +232,14 @@ const ItemDetail: NextPage = () => {
                 <Link href={`/products/${product.id}`} key={product.id}>
                   <div>
                     {product.image ? (
-                      <img
-                        src={product.image}
-                        className="h-56 w-full mb-4 bg-slate-300"
-                      />
+                      <div className="aspect-w-16 aspect-h-14 mb-4">
+                        <img
+                          src={product.image}
+                          className="bg-slate-300"
+                        />
+                      </div>
                     ) : (
-                      <div className="h-56 w-full mb-4 bg-slate-300" />
+                      <div className="aspect-w-16 aspect-h-14 mb-4 bg-slate-300" />
                     )}
                     <h3 className="text-gray-700 -mb-1">{product.name}</h3>
                     <span className="text-sm font-medium text-gray-900">
