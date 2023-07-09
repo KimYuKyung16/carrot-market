@@ -136,7 +136,7 @@ const ItemDetail: NextPage = () => {
               <div className="h-0 w-full aspect-w-16 aspect-h-9" />
             )}
 
-            <div className="flex cursor-pointer py-3 border-t border-b items-center space-x-3">
+            <div className="flex py-3 border-t border-b items-center space-x-3">
               {data?.product.user.avatar ? (
                 <img
                   src={data.product.user.avatar}
