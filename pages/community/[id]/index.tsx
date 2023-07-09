@@ -212,7 +212,9 @@ const CommunityPostDetail: NextPage = () => {
         <div>
           <div className="flex mt-2 px-4 text-gray-700 space-x-2">
             <span className="text-orange-500 font-medium">Q.</span>
-            <pre className="whitespace-pre-wrap font-sans">{data?.post?.question}</pre>
+            <pre className="whitespace-pre-wrap font-sans">
+              {data?.post?.question}
+            </pre>
           </div>
           <div className="flex px-4 space-x-5 mt-3 text-gray-700 py-2.5 border-t border-b-[2px]  w-full">
             <button
@@ -313,7 +315,9 @@ const CommunityPostDetail: NextPage = () => {
                     ) : null}
                   </div>
                   {editState[i] ? null : (
-                    <p className="ml-10 text-gray-700 mt-2">{answer.answer}</p>
+                    <pre className="whitespace-pre-wrap font-sans ml-10 text-gray-700 mt-2">
+                      {answer.answer}
+                    </pre>
                   )}
                 </div>
                 <div>
@@ -348,7 +352,7 @@ const CommunityPostDetail: NextPage = () => {
             required
             register={register("answer", { required: true, minLength: 1 })}
           />
-          <button className="mt-2 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none ">
+          <button className="mt-2 mb-5 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none ">
             {answerLoading ? "Loading..." : "Reply"}
           </button>
         </form>

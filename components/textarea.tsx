@@ -1,4 +1,5 @@
 import { cls } from "@libs/client/utils";
+import { useRef, useState } from "react";
 import { UseFormRegisterReturn } from "react-hook-form";
 
 interface TextAreaProps {
@@ -14,6 +15,12 @@ export default function TextArea({
   register,
   ...rest
 }: TextAreaProps) {
+  const textRef = useRef<any>(null);
+  const handleResizeHeight = () => {
+    textRef.current.style.height = "122px";
+    textRef.current.style.height = textRef.current.scrollHeight + "px";
+  };
+
   return (
     <div>
       {label ? (
@@ -27,11 +34,13 @@ export default function TextArea({
       <textarea
         id={name}
         {...register}
-        className={
-          "w-full px-3 py-2 mt-1 shadow-sm  border focus:ring-orange-500 rounded-md border-gray-300 focus:border focus:border-orange-500 focus:outline-none"
-        }
-        rows={4}
+        className={`h-[120px] w-full px-3 py-2 mt-1 shadow-sm resize-none border focus:ring-orange-500 rounded-md border-gray-300 focus:border focus:border-orange-500 focus:outline-none overflow-y-hidden`}
+        ref={(e) => {
+          register.ref(e);
+          textRef.current = e;
+        }}
         {...rest}
+        onChange={handleResizeHeight}
       />
     </div>
   );
