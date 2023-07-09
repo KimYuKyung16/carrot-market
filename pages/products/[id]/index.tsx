@@ -182,9 +182,7 @@ const ItemDetail: NextPage = () => {
               <span className="text-2xl block mt-3 text-gray-900">
                 {data?.product?.price} 원
               </span>
-              <p className=" my-6 text-gray-700">
-                {data?.product?.description}{" "}
-              </p>
+              <pre className="whitespace-pre-wrap font-sans my-6 text-gray-700">{data?.product?.description}</pre>
               <div className="flex items-center justify-between space-x-2">
                 <Button onClick={onChatClick} large text="Talk to seller" />
                 <button
@@ -243,7 +241,7 @@ const ItemDetail: NextPage = () => {
                     )}
                     <h3 className="text-gray-700 -mb-1">{product.name}</h3>
                     <span className="text-sm font-medium text-gray-900">
-                      {product.price}
+                      {product.price} 원
                     </span>
                   </div>
                 </Link>

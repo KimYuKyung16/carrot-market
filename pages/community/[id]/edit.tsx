@@ -48,7 +48,7 @@ const Edit: NextPage = () => {
     <Layout canGoBack title="Edit Post">
       <form onSubmit={handleSubmit(onValid)} className="p-4 space-y-4">
         <TextArea
-          register={register("question", { required: true, minLength: 5 })}
+          register={register("question", { required: true, minLength: 1 })}
           required
           placeholder="Ask a question!"
         />

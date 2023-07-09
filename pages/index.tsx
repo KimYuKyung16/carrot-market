@@ -21,7 +21,7 @@ interface ProductResponse {
 const Home: NextPage = () => {
   const loadRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [load, setLoad] = useState(false);
   const { data, size, setSize } = useSWRInfinite<ProductResponse>(
     (pageIndex: number, previousPageData: ProductResponse) => {
@@ -31,8 +31,12 @@ const Home: NextPage = () => {
       }
       if (!load) return;
       return search
-        ? (previousPageData ? `/api/products?cursor=${previousPageData.cursor}&search=${search}` : `/api/products?search=${search}`)
-        : (previousPageData ? `/api/products?cursor=${previousPageData.cursor}` : `/api/products`)
+        ? previousPageData
+          ? `/api/products?cursor=${previousPageData.cursor}&search=${search}`
+          : `/api/products?search=${search}`
+        : previousPageData
+        ? `/api/products?cursor=${previousPageData.cursor}`
+        : `/api/products`;
     }
   );
 
@@ -58,23 +62,23 @@ const Home: NextPage = () => {
     };
   }, [loadRef, options, data]);
   const searchFunc = (search: string) => {
-    localStorage.setItem('productSearch', search);
-    if (search.trim().length <= 0) return; 
+    localStorage.setItem("productSearch", search);
+    if (search.trim().length <= 0) return;
     setSearch(search);
     setSize(1);
     setVisible(true);
-  }
+  };
   useEffect(() => {
-    const productSearch = localStorage.getItem('productSearch');
-    if (productSearch && search === '') {
+    const productSearch = localStorage.getItem("productSearch");
+    if (productSearch && search === "") {
       setSearch(productSearch);
       setVisible(true);
     }
     setLoad(true);
-  }, [data])
+  }, [data]);
 
   const reload = () => {
-    localStorage.removeItem('productSearch')
+    localStorage.removeItem("productSearch");
   };
   useEffect(() => {
     (() => {
@@ -90,50 +94,60 @@ const Home: NextPage = () => {
       <Head>
         <title>Home</title>
       </Head>
-      <div className="flex flex-col space-y-5 divide-y">
-        {data
-          ? data.map((products) =>
-              products.products.map((product) => (
-                <Item
-                  id={product.id}
-                  key={product.id}
-                  image={product.image}
-                  title={product.name}
-                  state={product.state}
-                  price={product.price}
-                  comments={product._count.Chat}
-                  hearts={product._count.favs}
-                />
-              ))
-            )
-          : null}
+      {data ? (
+        <div className="flex flex-col space-y-5 divide-y">
+          {data
+            ? data.map((products) =>
+                products.products.map((product) => (
+                  <Item
+                    id={product.id}
+                    key={product.id}
+                    image={product.image}
+                    title={product.name}
+                    state={product.state}
+                    price={product.price}
+                    comments={product._count.Chat}
+                    hearts={product._count.favs}
+                  />
+                ))
+              )
+            : null}
+          <div
+            ref={loadRef}
+            className={cls(
+              "flex justify-center bg-white",
+              visible ? "block" : "hidden"
+            )}
+          >
+            <img src="/loading_icon.svg" className="w-12 h-12" />
+          </div>
+        </div>
+      ) : (
         <div
-          ref={loadRef}
           className={cls(
-            "flex justify-center bg-white",
-            visible ? "block" : "hidden"
+            "flex justify-center items-center w-full h-screen pb-52 bg-white",
           )}
         >
           <img src="/loading_icon.svg" className="w-12 h-12" />
         </div>
-        <FloatingButton href="/products/upload" aria-label="add">
-          <svg
-            className="h-6 w-6"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-        </FloatingButton>
-      </div>
+      )}
+      <FloatingButton href="/products/upload" aria-label="add">
+        <svg
+          className="h-6 w-6"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+          />
+        </svg>
+      </FloatingButton>
     </Layout>
   );
 };

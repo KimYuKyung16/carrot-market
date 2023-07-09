@@ -189,7 +189,7 @@ const CommunityPostDetail: NextPage = () => {
           ) : null}
         </div>
 
-        <div className="flex mb-3 px-4 cursor-pointer pb-3  border-b items-center space-x-3">
+        <div className="flex mb-3 px-4 pb-3  border-b items-center space-x-3">
           {data?.post.user.avatar ? (
             <img
               src={data.post.user.avatar}
@@ -210,9 +210,9 @@ const CommunityPostDetail: NextPage = () => {
           </div>
         </div>
         <div>
-          <div className="mt-2 px-4 text-gray-700">
-            <span className="text-orange-500 font-medium">Q.</span>{" "}
-            {data?.post?.question}
+          <div className="flex mt-2 px-4 text-gray-700 space-x-2">
+            <span className="text-orange-500 font-medium">Q.</span>
+            <pre className="whitespace-pre-wrap font-sans">{data?.post?.question}</pre>
           </div>
           <div className="flex px-4 space-x-5 mt-3 text-gray-700 py-2.5 border-t border-b-[2px]  w-full">
             <button
