@@ -3,7 +3,7 @@ import withHandler, { ResponseType } from "@libs/server/withHandler";
 import { NextApiRequest, NextApiResponse } from "next";
 
 async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) {
-  const { phone, email } = req.body;
+  const { phone, email, username } = req.body;
 
   const existAccount = await client.user.findMany({
     where: {
@@ -18,7 +18,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
   const account = await client.user.create({
     data: {
       ...user,
-      name: 'Anonymous',
+      name: username,
     }
   })
 

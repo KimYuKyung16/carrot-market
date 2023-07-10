@@ -7,7 +7,7 @@ import { Product } from "@prisma/client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 import { cls } from "@libs/client/utils";
-import { useRouter } from "next/router";
+import useUser from "@libs/client/useUser";
 
 export interface ProductWithCount extends Product {
   _count: { favs: number; Chat: number };
@@ -19,10 +19,13 @@ interface ProductResponse {
 }
 
 const Home: NextPage = () => {
+  const { user } = useUser();
   const loadRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
   const [search, setSearch] = useState("");
   const [load, setLoad] = useState(false);
+
+
   const { data, size, setSize } = useSWRInfinite<ProductResponse>(
     (pageIndex: number, previousPageData: ProductResponse) => {
       if (previousPageData && previousPageData.products.length < 20) {
@@ -94,7 +97,7 @@ const Home: NextPage = () => {
       <Head>
         <title>Home</title>
       </Head>
-      {data ? (
+      {data && user ? (
         <div className="flex flex-col space-y-5 divide-y">
           {data
             ? data.map((products) =>

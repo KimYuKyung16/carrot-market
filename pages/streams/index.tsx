@@ -6,6 +6,7 @@ import { Stream } from "@prisma/client";
 import useSWR from "swr";
 import Image from "next/image";
 import { useEffect } from "react";
+import useUser from "@libs/client/useUser";
 
 interface StreamsResponse {
   ok: boolean;
@@ -13,30 +14,32 @@ interface StreamsResponse {
 }
 
 const Streams: NextPage = () => {
+  const { user } = useUser();
   const { data } = useSWR<StreamsResponse>(`/api/streams`); // 주소가 SWR의 key 역할을 한다.
   useEffect(() => {
-    localStorage.removeItem('productSearch');
-  }, [])
+    localStorage.removeItem("productSearch");
+  }, []);
   return (
     <Layout hasTabBar title="라이브">
       <div className=" divide-y-[1px] space-y-4">
-        {data?.streams.map((stream) => (
-          <Link key={stream.id} href={`/streams/${stream.id}`}>
-            <a className="pt-4 block  px-4">
-              <div className="h-0 w-full aspect-w-16 aspect-h-9 bg-black overflow-hidden">
-                <iframe
-                  src={`https://customer-qkzviq88w8n4p4hm.cloudflarestream.com/${stream.cloudflareId}/thumbnails/thumbnail.jpg?height=305`}
-                  className="w-full h-full rounded-md shadow-sm border-none "
-                  allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                  allowFullScreen={true}
-                ></iframe>
-              </div>
-              <h1 className="text-2xl mt-2 font-bold text-gray-900">
-                {stream.name}
-              </h1>
-            </a>
-          </Link>
-        ))}
+        {user &&
+          data?.streams.map((stream) => (
+            <Link key={stream.id} href={`/streams/${stream.id}`}>
+              <a className="pt-4 block  px-4">
+                <div className="h-0 w-full aspect-w-16 aspect-h-9 bg-black overflow-hidden">
+                  <iframe
+                    src={`https://customer-qkzviq88w8n4p4hm.cloudflarestream.com/${stream.cloudflareId}/thumbnails/thumbnail.jpg?height=305`}
+                    className="w-full h-full rounded-md shadow-sm border-none "
+                    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowFullScreen={true}
+                  ></iframe>
+                </div>
+                <h1 className="text-2xl mt-2 font-bold text-gray-900">
+                  {stream.name}
+                </h1>
+              </a>
+            </Link>
+          ))}
         <FloatingButton href="/streams/create">
           <svg
             className="w-6 h-6"

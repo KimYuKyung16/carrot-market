@@ -5,6 +5,7 @@ import ProductList from "@components/product-list";
 import useSWR from "swr";
 import { Product } from "@prisma/client";
 import { ProductWithCount } from "pages";
+import useUser from "@libs/client/useUser";
 
 interface ProductListResponse {
   ok: boolean;
@@ -12,12 +13,13 @@ interface ProductListResponse {
 }
 
 const Sold: NextPage = () => {
+  const { user } = useUser();
   const { data } = useSWR<ProductListResponse>(`/api/users/me/sales`);
 
   return (
     <Layout title="판매내역" canGoBack>
       <div className="flex flex-col space-y-5 pb-10  divide-y">
-        {data?.sales.map((product) => (
+        {user && data?.sales.map((product) => (
           <Item
             id={product.id}
             key={product.id}

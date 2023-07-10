@@ -23,7 +23,7 @@ const Chats: NextPage = () => {
   return (
     <Layout hasTabBar title="채팅">
       <div className="divide-y-[1px] ">
-        {data?.chats.map((chat, i) => (
+        {user && data?.chats.map((chat, i) => (
           <Link href={`/chats/${chat.id}`} key={i}>
             <a className="flex px-4 cursor-pointer py-3 items-center space-x-3">
               {chat.product.image ? (

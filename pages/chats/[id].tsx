@@ -50,10 +50,10 @@ interface ReviewForm {
 const socket = io("https://kcarrotmarket.store");
 const ChatDetail: NextPage = () => {
   const router = useRouter();
+  const { user, isLoading } = useUser();
   const { register, handleSubmit } = useForm<ReviewForm>();
   const scrollRef = useRef<HTMLDivElement>(null);
   const sendRef = useRef<HTMLInputElement>(null);
-  const { user, isLoading } = useUser();
   const [saveMessage, { loading }] = useMutation<MessageResponse>(
     `/api/chats/${router.query.id}/message`,
     "POST"
@@ -64,7 +64,7 @@ const ChatDetail: NextPage = () => {
     router.query.id ? `/api/chats/${router.query.id}/message` : null
   );
   const { data: productData } = useSWR<ProductInfo>(
-    messageList?.productName.product.id
+    messageList?.productName?.product.id
       ? `/api/products/${messageList?.productName.product.id}`
       : null
   );
@@ -122,14 +122,6 @@ const ChatDetail: NextPage = () => {
       }
     });
   };
-  // const onKeyPress = (e: any) => {
-  //   console.log(e)
-  //   e.preventdefault();
-  //   if (e.key === 'Enter') {
-  //     onClickSendBtn();
-  //   }
-  // }
-
   const onClickSendBtn = async () => {
     if ((!router.query.id && !user) || loading) {
       swal("메시지 전송에 실패했습니다.");
@@ -282,7 +274,9 @@ const ChatDetail: NextPage = () => {
           </form>
         </div>
       ) : null}
-      {messageList?.productName.product.state && reviewState === "false" ? (
+      {user &&
+      messageList?.productName.product.state &&
+      reviewState === "false" ? (
         <div
           onClick={() => {
             setModal(false);
@@ -298,86 +292,88 @@ const ChatDetail: NextPage = () => {
         </div>
       ) : null}
 
-      <Layout
-        canGoBack
-        title={messageList?.productName.product.name}
-        chat={{
-          onClickTranscation: onClickTransactionBtn,
-          product_userId: productData?.product.userId,
-        }}
-      >
-        <div ref={scrollRef} className="py-5 pb-16 px-4 space-y-4">
-          {existMessage
-            ? existMessage.map((message, i) => {
-                let { year, month, day, hour, minute } = getDateTime(
-                  message.createdAt
-                );
-                let dayState =
-                  i >= 1 &&
-                  getDateTime(existMessage[i - 1].createdAt).day === day;
+      {user ? (
+        <Layout
+          canGoBack
+          title={messageList?.productName.product.name}
+          chat={{
+            onClickTranscation: onClickTransactionBtn,
+            product_userId: productData?.product.userId,
+          }}
+        >
+          <div ref={scrollRef} className="py-5 pb-16 px-4 space-y-4">
+            {existMessage
+              ? existMessage.map((message, i) => {
+                  let { year, month, day, hour, minute } = getDateTime(
+                    message.createdAt
+                  );
+                  let dayState =
+                    i >= 1 &&
+                    getDateTime(existMessage[i - 1].createdAt).day === day;
 
-                return message.notification ? (
-                  <div key={i}>
-                    {!dayState ? (
-                      <div className="flex justify-center">
-                        <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
-                      </div>
-                    ) : null}
-                    <NotificationMessage
-                      message={message.message}
-                      avatarUrl={message.User.avatar}
-                      date={hour + ":" + minute}
-                      name={message.User.name}
-                      reversed={user?.id === message.userId}
-                      senderId={message.userId}
-                      productId={messageList?.productName.product.id}
-                      existMessage={existMessage}
-                      chatId={router.query.id}
-                      existMessageIndex={i}
-                    />
-                  </div>
-                ) : (
-                  <div key={i}>
-                    {!dayState ? (
-                      <div className="flex justify-center">
-                        <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
-                      </div>
-                    ) : null}
-                    <Message
-                      message={message.message}
-                      avatarUrl={message.User.avatar}
-                      date={hour + ":" + minute}
-                      name={message.User.name}
-                      reversed={user?.id === message.userId}
-                    />
-                  </div>
-                );
-              })
-            : null}
+                  return message.notification ? (
+                    <div key={i}>
+                      {!dayState ? (
+                        <div className="flex justify-center">
+                          <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
+                        </div>
+                      ) : null}
+                      <NotificationMessage
+                        message={message.message}
+                        avatarUrl={message.User.avatar}
+                        date={hour + ":" + minute}
+                        name={message.User.name}
+                        reversed={user?.id === message.userId}
+                        senderId={message.userId}
+                        productId={messageList?.productName.product.id}
+                        existMessage={existMessage}
+                        chatId={router.query.id}
+                        existMessageIndex={i}
+                      />
+                    </div>
+                  ) : (
+                    <div key={i}>
+                      {!dayState ? (
+                        <div className="flex justify-center">
+                          <p className="shadow-md text-xs rounded-lg py-2 px-5 bg-orange-400 text-white text-center border-b-2 border-orange-300">{`${year}년 ${month}월 ${day}일`}</p>
+                        </div>
+                      ) : null}
+                      <Message
+                        message={message.message}
+                        avatarUrl={message.User.avatar}
+                        date={hour + ":" + minute}
+                        name={message.User.name}
+                        reversed={user?.id === message.userId}
+                      />
+                    </div>
+                  );
+                })
+              : null}
 
-          <form
-            onSubmit={onClickEnter}
-            className="fixed py-2 bottom-0 inset-x-0 pb-5 bg-white"
-          >
-            <div className="flex relative max-w-lg items-center h-9 w-full mx-auto border border-gray-300 rounded-md">
-              <input
-                ref={sendRef}
-                onChange={onChangeSend}
-                type="text"
-                className="h-full px-2 shadow-sm rounded-full w-full border-gray-300 focus:ring-orange-500 focus:outline-none pr-12 focus:border-orange-500"
-              />
-              <div className="absolute inset-y-0 flex py-1.5 pr-1.5 right-0">
+            <form
+              onSubmit={onClickEnter}
+              className="fixed py-2 bottom-0 inset-x-0 pb-5 bg-white"
+            >
+              <div className="flex relative max-w-lg items-center h-9 w-full mx-auto border border-gray-300 rounded-md">
                 <input
-                  type="button"
-                  value="&rarr;"
-                  onClick={onClickSendBtn}
-                  className="flex focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 items-center bg-orange-500 rounded-full px-3 hover:bg-orange-600 text-sm text-white"
-                ></input>
+                  ref={sendRef}
+                  onChange={onChangeSend}
+                  type="text"
+                  className="h-full px-2 shadow-sm rounded-full w-full border-gray-300 focus:ring-orange-500 focus:outline-none pr-12 focus:border-orange-500"
+                />
+                <div className="absolute inset-y-0 flex py-1.5 pr-1.5 right-0">
+                  <input
+                    type="button"
+                    value="&rarr;"
+                    onClick={onClickSendBtn}
+                    className="flex focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 items-center bg-orange-500 rounded-full px-3 hover:bg-orange-600 text-sm text-white"
+                  ></input>
+                </div>
               </div>
-            </div>
-          </form>
-        </div>
-      </Layout>
+            </form>
+          </div>
+        </Layout>
+      ) : null}
     </>
   );
 };
