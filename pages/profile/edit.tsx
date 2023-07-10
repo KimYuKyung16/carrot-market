@@ -105,9 +105,10 @@ const EditProfile: NextPage = () => {
             <img
               src={avatarPreview}
               className="w-14 h-14 rounded-full bg-slate-500"
+              alt="프로필 사진"
             />
           ) : user?.avatar ? (
-            <img src={user?.avatar} className="w-14 h-14 rounded-full" />
+            <img src={user?.avatar} className="w-14 h-14 rounded-full" alt="프로필 사진"/>
           ) : (
             <div className="w-14 h-14 rounded-full bg-slate-500" />
           )}

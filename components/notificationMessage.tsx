@@ -158,7 +158,7 @@ export default function NotificationMessage({
           )}
         >
           {avatarUrl ? (
-            <img src={avatarUrl} className="w-8 h-8 rounded-full" />
+            <img src={avatarUrl} className="w-8 h-8 rounded-full" alt="프로필 사진" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-slate-400" />
           )}
@@ -166,7 +166,7 @@ export default function NotificationMessage({
           <div className="flex flex-col space-y-3 items-center w-3/4 text-base text-white p-3 bg-orange-500 border-2 border-orange-500 rounded-md">
             {message === "거래가 취소되었습니다" ||
             message === "거래가 완료되었습니다" ? null : (
-              <img className="h-20" src="/carrot.png" alt="carrot_icon" />
+              <img className="h-20" src="/carrot.png" alt="당근 아이콘" />
             )}
             <p className="text-lg font-semibold">{message}</p>
             {message === "거래가 취소되었습니다" ||

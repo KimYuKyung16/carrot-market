@@ -38,6 +38,9 @@ async function handler(
     const parsedLatitude = parseFloat((latitude as string | string[]).toString());
     const parsedLongitude = parseFloat((longitude as string | string[]).toString());
     const posts = await client.post.findMany({ // POST 레코드를 반환
+      orderBy: {
+        createdAt: 'desc'
+      },
       include: { // 반환된 개체에 어떤 관계를 불러올지 지정
         user: {
           select: { // 반환 개체에 포함할 속성 지정 : USER에서 포함할 내용(id, name, avatar)

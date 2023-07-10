@@ -77,7 +77,7 @@ export default function Layout({
         {search ? (
           <form onSubmit={onClickSearch} className="flex items-center absolute right-0 h-10 bg-white w-1/3 p-1 border border-gray-200 rounded-lg focus-within:w-full text-sm">
             <input ref={searchRef} placeholder="제품 검색" className="outline-none w-full text-gray-600 p-2"/>
-            <img onClick={onClickSearch} src="/search_icon.svg" className="h-4/5" />
+            <img onClick={onClickSearch} src="/search_icon.svg" className="h-4/5" alt="검색 아이콘"/>
           </form>
         ) : null}
       </div>

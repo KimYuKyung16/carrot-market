@@ -34,7 +34,7 @@ export default function Message({
         </div>
         <div className={cls("flex gap-2", reversed ? "flex-row-reverse" : "")}>
           {avatarUrl ? (
-            <img src={avatarUrl} className="w-8 h-8 rounded-full" />
+            <img src={avatarUrl} className="w-8 h-8 rounded-full" alt="프로필 사진" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-slate-400" />
           )}

@@ -194,6 +194,7 @@ const CommunityPostDetail: NextPage = () => {
             <img
               src={data.post.user.avatar}
               className="w-10 h-10 rounded-full bg-slate-500"
+              alt="프로필 이미지"
             />
           ) : (
             <div className="w-10 h-10 rounded-full bg-slate-300" />
@@ -273,7 +274,8 @@ const CommunityPostDetail: NextPage = () => {
                       {answer.user.avatar ? (
                         <img
                           src={answer.user.avatar}
-                          className="w-8 h-8 rounded-full bg-slate-500"
+                          className="w-8 h-8 rounded-full bg-slate-200"
+                          alt="프로필 이미지"
                         />
                       ) : (
                         <div className="w-8 h-8 bg-slate-200 rounded-full" />

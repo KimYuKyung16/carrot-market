@@ -33,28 +33,28 @@ export default function Item({
     if (!data) return;
     if (!data.product) {
       swal("판매자에 의해 삭제된 물품입니다");
-    } 
+    }
   };
   return (
     <Link href={`/products/${id}`}>
       <a
-      onClick={onClickProduct}
-      className="flex px-4 pt-5 w-100 cursor-pointer justify-between"
+        onClick={onClickProduct}
+        className="flex px-4 pt-5 w-100 cursor-pointer justify-between"
       >
-      <div className="flex space-x-4 w-full">
-        {image ? (
-          <Image
-            priority={true}
-            loader={() => {
-              return image + "?w=80"
-            }}
-            src={image}
+        <div className="flex space-x-4 w-full">
+          {image ? (
+            <Image
+              priority={true}
+              loader={() => {
+                return image;
+              }}
+              src={image}
               className="-z-10 w-20 h-20 bg-gray-400 rounded-md"
               width={80}
               height={80}
               alt="판매 제품"
-              // placeholder="blur"
-              // blurDataURL={image}
+              placeholder="blur"
+              blurDataURL={image}
             />
           ) : (
             <div className="w-20 h-20 bg-gray-400 rounded-md" />

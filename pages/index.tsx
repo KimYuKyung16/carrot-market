@@ -119,7 +119,7 @@ const Home: NextPage = () => {
               visible ? "block" : "hidden"
             )}
           >
-            <img src="/loading_icon.svg" className="w-12 h-12" />
+            <img src="/loading_icon.svg" className="w-12 h-12" alt="로딩 아이콘"/>
           </div>
         </div>
       ) : (
@@ -128,7 +128,7 @@ const Home: NextPage = () => {
             "flex justify-center items-center w-full h-screen pb-52 bg-white",
           )}
         >
-          <img src="/loading_icon.svg" className="w-12 h-12" />
+          <img src="/loading_icon.svg" className="w-12 h-12" alt="로딩 아이콘"/>
         </div>
       )}
       <FloatingButton href="/products/upload" aria-label="add">

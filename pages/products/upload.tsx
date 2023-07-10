@@ -100,7 +100,7 @@ const Upload: NextPage = () => {
           {productPreview ? (
             <label className="w-full text-gray-600 rounded-md">
               <div className="w-full h-0 aspect-w-16 aspect-h-9">
-                <img src={productPreview}/>
+                <img src={productPreview} alt="제품 이미지"/>
               </div>
               <input {...register("image")} className="hidden" type="file" />
             </label>

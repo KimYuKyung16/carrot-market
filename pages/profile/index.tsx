@@ -71,6 +71,7 @@ const Profile: NextPage = () => {
               <img
                 src={user.avatar}
                 className="w-14 h-14 rounded-full bg-slate-500"
+                alt="프로필 사진"
               />
             ) : (
               <div className="w-16 h-16 bg-slate-500 rounded-full" />
@@ -174,6 +175,7 @@ const Profile: NextPage = () => {
                       <img
                         src={review.createdBy.avatar}
                         className="w-12 h-12 rounded-full bg-slate-500"
+                        alt="프로필 사진"
                       />
                     ) : (
                       <p className="w-12 h-12 rounded-full bg-slate-500" />

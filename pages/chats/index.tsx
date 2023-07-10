@@ -30,6 +30,7 @@ const Chats: NextPage = () => {
                 <img
                   src={chat.product.image}
                   className="w-12 h-12 rounded-full"
+                  alt="제품 이미지"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-slate-300" />

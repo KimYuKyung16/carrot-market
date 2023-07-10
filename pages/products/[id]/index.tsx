@@ -130,6 +130,7 @@ const ItemDetail: NextPage = () => {
                   placeholder="blur"
                   blurDataURL={data.product.image}
                   layout="fill"
+                  alt="판매 제품"
                 />
               </div>
             ) : (
@@ -141,6 +142,7 @@ const ItemDetail: NextPage = () => {
                 <img
                   src={data.product.user.avatar}
                   className="w-12 h-12 rounded-full bg-slate-300"
+                  alt="프로필 이미지"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-slate-300" />
@@ -233,7 +235,17 @@ const ItemDetail: NextPage = () => {
                   <div>
                     {product.image ? (
                       <div className="aspect-w-16 aspect-h-14 mb-4">
-                        <img src={product.image} className="bg-slate-300" />
+                        <Image
+                          priority={true}
+                          loader={() => {
+                            return product.image;
+                          }}
+                          src={product.image}
+                          className="-z-10 w-20 h-20 bg-gray-400 rounded-md"
+                          alt="판매 제품"
+                          placeholder="blur"
+                          blurDataURL={product.image}
+                        />
                       </div>
                     ) : (
                       <div className="aspect-w-16 aspect-h-14 mb-4 bg-slate-300" />
