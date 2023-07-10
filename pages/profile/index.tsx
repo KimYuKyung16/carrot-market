@@ -27,7 +27,7 @@ interface MutationResult {
 const Profile: NextPage = () => {
   const router = useRouter();
   const { user } = useUser();
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const { data, size, setSize } = useSWRInfinite<ReviewsResponse>(
     (pageIndex: number, previousPageData: ReviewsResponse) => {
       if (previousPageData && previousPageData.reviews.length < 10) {
@@ -47,6 +47,9 @@ const Profile: NextPage = () => {
     new Array(data?.length).fill(0).map(() => new Array(10).fill(false))
   );
   useEffect(() => {
+    if (data?.length === 1) {
+      setVisible(true);
+    }
     if (data && data[data.length - 1].reviews.length < 10) {
       setVisible(false);
     }

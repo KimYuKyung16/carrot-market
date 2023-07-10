@@ -30,7 +30,7 @@ async function handler(
     res.json({
       ok: true,
       reviews,
-      cursor: reviews[reviews.length - 1].id,
+      cursor: reviews.length > 0 ? reviews[reviews.length - 1].id : null,
     });
   } else {
     const reviews = await client.review.findMany({
