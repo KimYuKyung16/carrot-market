@@ -6,8 +6,9 @@ import useSWR from "swr";
 import { Review, User } from "@prisma/client";
 import { cls } from "@libs/client/utils";
 import useMutation from "@libs/client/useMutation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import useSWRInfinite from "swr/infinite";
 
 interface ReviewWithUser extends Review {
   createdBy: User;
@@ -16,6 +17,7 @@ interface ReviewWithUser extends Review {
 interface ReviewsResponse {
   ok: boolean;
   reviews: ReviewWithUser[];
+  cursor: string;
 }
 
 interface MutationResult {
@@ -25,18 +27,37 @@ interface MutationResult {
 const Profile: NextPage = () => {
   const router = useRouter();
   const { user } = useUser();
-  const { data } = useSWR<ReviewsResponse>(`api/reviews`);
+  const [visible, setVisible] = useState(true);
+  const { data, size, setSize } = useSWRInfinite<ReviewsResponse>(
+    (pageIndex: number, previousPageData: ReviewsResponse) => {
+      if (previousPageData && previousPageData.reviews.length < 10) {
+        setVisible(false);
+        return null;
+      }
+      return previousPageData
+        ? `/api/reviews?cursor=${previousPageData.cursor}`
+        : `/api/reviews`;
+    }
+  );
   const [logout, { loading, data: logoutData }] = useMutation<MutationResult>(
     "/api/users/logout",
     "POST"
   );
+  const [reviewState, setReviewState] = useState(
+    new Array(data?.length).fill(0).map(() => new Array(10).fill(false))
+  );
+  useEffect(() => {
+    if (data && data[data.length - 1].reviews.length < 10) {
+      setVisible(false);
+    }
+  }, [data]);
   useEffect(() => {
     if (!logoutData || !logoutData?.ok) return;
     router.reload();
   }, [logoutData]);
   useEffect(() => {
-    localStorage.removeItem('productSearch');
-  }, [])
+    localStorage.removeItem("productSearch");
+  }, []);
 
   return (
     <Layout hasTabBar title="나의 캐럿">
@@ -142,48 +163,81 @@ const Profile: NextPage = () => {
           </Link>
         </div>
         {user && data
-          ? data?.reviews.map((review) => (
-              <div key={review.id} className="mt-12">
-                <div className="flex space-x-4 items-center">
-                  {review.createdBy.avatar ? (
-                    <img
-                      src={review.createdBy.avatar}
-                      className="w-12 h-12 rounded-full bg-slate-500"
-                    />
-                  ) : (
-                    <p className="w-12 h-12 rounded-full bg-slate-500" />
-                  )}
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800">
-                      {review.createdBy.name}
-                    </h4>
-                    <div className="flex items-center">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg
-                          key={star}
-                          className={cls(
-                            "h-5 w-5",
-                            review.score >= star
-                              ? "text-yellow-400"
-                              : "text-gray-400"
-                          )}
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
+          ? data.map((reviews, index) =>
+              reviews.reviews.map((review, i) => (
+                <div key={review.id} className="mt-12">
+                  <div className="flex space-x-4 items-center">
+                    {review.createdBy.avatar ? (
+                      <img
+                        src={review.createdBy.avatar}
+                        className="w-12 h-12 rounded-full bg-slate-500"
+                      />
+                    ) : (
+                      <p className="w-12 h-12 rounded-full bg-slate-500" />
+                    )}
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-800">
+                        {review.createdBy.name}
+                      </h4>
+                      <div className="flex items-center">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <svg
+                            key={star}
+                            className={cls(
+                              "h-5 w-5",
+                              review.score >= star
+                                ? "text-yellow-400"
+                                : "text-gray-400"
+                            )}
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                  <div className="mt-4 mb-2 text-gray-600 text-sm">
+                    <pre
+                      className={cls(
+                        "whitespace-pre-wrap font-sans",
+                        reviewState[index][i] ? "" : "line-clamp-3"
+                      )}
+                    >
+                      {review.review}
+                    </pre>
+                    <p
+                      onClick={() => {
+                        let nReviewState = [...reviewState];
+                        nReviewState[index][i] = !reviewState[index][i];
+                        setReviewState(nReviewState);
+                      }}
+                      className="flex justify-end text-orange-300 text-xs font-bold pt-1"
+                    >
+                      {reviewState[index][i] ? "닫기" : "더보기"}
+                    </p>
+                  </div>
                 </div>
-                <div className="mt-4 text-gray-600 text-sm">
-                  <p>{review.review}</p>
-                </div>
-              </div>
-            ))
+              ))
+            )
           : null}
+        <button
+          className={cls(
+            "flex justify-center items-center bg-orange-400 text-white h-12 rounded-md w-full",
+            visible ? "block" : "hidden"
+          )}
+          onClick={() => {
+            setSize(size + 1);
+            let nReviewState = [...reviewState];
+            nReviewState.push(new Array(10).fill(false));
+            setReviewState(nReviewState);
+          }}
+        >
+          리뷰 더보기
+        </button>
       </div>
     </Layout>
   );

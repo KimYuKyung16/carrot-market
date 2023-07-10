@@ -124,7 +124,7 @@ const ItemDetail: NextPage = () => {
                 <Image
                   priority={true}
                   loader={() => {
-                    return data.product.image + "?w=100%";
+                    return data.product.image;
                   }}
                   src={data.product.image}
                   placeholder="blur"
@@ -182,7 +182,9 @@ const ItemDetail: NextPage = () => {
               <span className="text-2xl block mt-3 text-gray-900">
                 {data?.product?.price} 원
               </span>
-              <pre className="whitespace-pre-wrap font-sans my-6 text-gray-700">{data?.product?.description}</pre>
+              <pre className="whitespace-pre-wrap font-sans my-6 text-gray-700">
+                {data?.product?.description}
+              </pre>
               <div className="flex items-center justify-between space-x-2">
                 <Button onClick={onChatClick} large text="Talk to seller" />
                 <button
@@ -231,10 +233,7 @@ const ItemDetail: NextPage = () => {
                   <div>
                     {product.image ? (
                       <div className="aspect-w-16 aspect-h-14 mb-4">
-                        <img
-                          src={product.image}
-                          className="bg-slate-300"
-                        />
+                        <img src={product.image} className="bg-slate-300" />
                       </div>
                     ) : (
                       <div className="aspect-w-16 aspect-h-14 mb-4 bg-slate-300" />

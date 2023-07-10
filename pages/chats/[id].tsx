@@ -288,7 +288,7 @@ const ChatDetail: NextPage = () => {
             setModal(false);
           }}
           className={cls(
-            "fixed left-0 top-0 z-10 h-screen w-screen  bg-black/[0.7]",
+            "fixed left-0 top-0 z-20 h-screen w-screen  bg-black/[0.7]",
             modal ? "" : "hidden"
           )}
         >

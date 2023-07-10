@@ -9,25 +9,63 @@ async function handler(
 ) {
   const {
     session: { user },
+    query: { cursor },
   } = req;
-  const reviews = await client.review.findMany({
-    where: {
-      createdForId: user?.id,
-    },
-    include: {
-      createdBy: {
-        select: {
-          id: true,
-          name: true,
-          avatar: true,
+  if (!cursor) {
+    const reviews = await client.review.findMany({
+      take: 10,
+      where: {
+        createdForId: user?.id,
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
         },
       },
-    },
-  });
-  res.json({
-    ok: true,
-    reviews,
-  });
+    });
+    res.json({
+      ok: true,
+      reviews,
+      cursor: reviews[reviews.length - 1].id,
+    });
+  } else {
+    const reviews = await client.review.findMany({
+      take: 10,
+      skip: 1,
+      cursor: {
+        id: +cursor,
+      },
+      where: {
+        createdForId: user?.id,
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+    if (reviews.length) {
+      res.json({
+        reviews,
+        cursor: reviews[reviews.length - 1].id,
+        ok: true,
+      });
+    } else {
+      res.json({
+        reviews: [],
+        cursor: null,
+        ok: true,
+      });
+    }
+  }
 }
 export default withApiSession(
   withHandler({
